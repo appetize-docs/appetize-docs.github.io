@@ -1,0 +1,917 @@
+---
+title: "TAPI - YAML Files"
+permalink: /page/tapi-yaml-files
+published: true
+layout: default
+createdAt: "2023-06-02T14:59:15.746Z"
+updatedAt: "2023-09-11T14:22:08.143Z"
+---
+{: .new-title }
+> TAPI 2.3.0 - Current Version
+>
+> Released on 02/24/2023
+
+
+
+{% tabs tapi %}
+
+{% tab tapi YAML
+ %}
+```yaml
+openapi: 3.0.0
+info:
+  version: 2.3.0
+  title: Transactions API
+  description: |
+    The Appetize Transactions API provides access to get and list order information.<br />
+    Use the ListOrders endpoint to get a list of all orders to which you have access, within a date and time range that you specify. <br/>
+    Use the GetOrder endpoint to get order details for a specific order, using the UUID you got from the ListOrders endpoint.<br/> 
+    We use JWT to authenticate your requests. You can generate it using the auth endpoint described below. Please contact Appetize to get the API key. 
+  contact: { }
+
+servers:
+  - description: Appetize API URL. This URL will be provided by our team.
+    url: https://{environment}.appetize.com
+
+paths:
+  /auth/transactions:
+    post:
+      summary: Authentication of API Key
+      tags:
+        - Auth
+      description: This auth endpoint will return the JWT token required to call Transactions API.
+      parameters:
+        - $ref: '#/components/parameters/x_api_key'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  auth_key:
+                    type: string
+                    example: "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ2..."
+        '400':
+          description: Bad Request
+          content:
+                application/json:
+                  schema:
+                    type: object
+                    properties:
+                      message :
+                        type : string
+                        example: 'bad request'
+                      code:
+                        type: integer
+                        example: 400
+        '401':
+          description: Unauthorized
+          content:
+                application/json:
+                  schema:
+                    type: object
+                    properties:
+                      message :
+                        type : string
+                        example: 'unauthorized'
+                      code:
+                        type: integer
+                        example: 401
+  /orders:
+    get:
+      tags:
+        - ListOrders
+      summary: Get a List of Orders
+      description: List orders to which you have access, as defined in your JWT.
+      operationId: listOrders
+      parameters:
+        - $ref: '#/components/parameters/start_date'
+        - $ref: '#/components/parameters/end_date'
+        - $ref: '#/components/parameters/start_sync_date'
+        - $ref: '#/components/parameters/end_sync_date'
+        - $ref: '#/components/parameters/limit'
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/retrieval_status'
+      responses:
+        '200':
+          description: Success
+          content:
+            'application/com.appetize.transactions_api.listOrders.v1.0+json':
+              schema:
+                $ref: '#/components/schemas/list_transactions_result'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '415':
+          $ref: '#/components/responses/415'
+        '422':
+          $ref: '#/components/responses/422'
+        '500':
+          $ref: '#/components/responses/500'
+  /orders/{local_order_uuid}:
+    get:
+      tags:
+        - GetOrder
+      summary: Get a Specific Order
+      description: Get a specific order and its details.
+      operationId: getOrder
+      parameters:
+        - $ref: '#/components/parameters/local_order_uuid'
+      responses:
+        '200':
+          description: Success
+          content:
+            'application/com.appetize.transactions_api.getOrder.v1+json':
+              schema:
+                $ref: '#/components/schemas/order'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '415':
+          $ref: '#/components/responses/415'
+        '422':
+          $ref: '#/components/responses/422'
+        '500':
+          $ref: '#/components/responses/500'
+  /quarantine-orders/{local_order_uuid}/mark-dead-letter:
+    put:
+        tags:
+          - MarkDeadLetterQuarantineOrder
+        summary: Mark Order as Dead Letter
+        description: Mark a quarantine order as dead letter.
+        operationId: markDeadLetterQuarantineOrder
+        parameters:
+          - $ref: '#/components/parameters/local_order_uuid'
+        responses:
+          '200':
+            description: Success
+          '400':
+            $ref: '#/components/responses/400'
+          '401':
+            $ref: '#/components/responses/401'
+          '415':
+            $ref: '#/components/responses/415'
+          '422':
+            $ref: '#/components/responses/422'
+          '500':
+            $ref: '#/components/responses/500'
+  /quarantine-orders:
+   get:
+      tags:
+        - ListQuarantineOrders
+      summary: Get a List of Quarantined Orders
+      description: List quarantine orders to which you have access, as defined in your JWT.
+      operationId: listQuarantineOrders
+      parameters:
+        - $ref: '#/components/parameters/start_date'
+        - $ref: '#/components/parameters/end_date'
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/status'
+      responses:
+        '200':
+          description: Success
+          content:
+            'application/com.appetize.transactions_api.listQuarantineOrders.v1.0+json':
+              schema:
+                $ref: '#/components/schemas/list_quarantine_orders_result'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '415':
+          $ref: '#/components/responses/415'
+        '422':
+          $ref: '#/components/responses/422'
+        '500':
+          $ref: '#/components/responses/500'        
+  /orders/{local_order_uuid}/reprocess:
+    post:
+      tags:
+        - Reprocess
+      summary: Reprocess a Specific Order
+      description: Reprocess an order that is stored in quarantine collection.
+      parameters:
+        - $ref: '#/components/parameters/local_order_uuid'
+      responses:
+        '200':
+          description: OK
+        '400':
+          description: Bad Request
+          content:
+                application/json:
+                  schema:
+                    type: object
+                    properties:
+                      message :
+                        type : string
+                        example: 'bad request'
+                      code:
+                        type: integer
+                        example: 400
+        '401':
+          description: Unauthorized
+          content:
+                application/json:
+                  schema:
+                    type: object
+                    properties:
+                      message :
+                        type : string
+                        example: 'unauthorized'
+                      code:
+                        type: integer
+                        example: 401
+components:
+  parameters:
+    corporate_id:
+      description: "The Corporate ID of the target transactions"
+      in: path
+      name: corporate_id
+      required: true
+      schema:
+        $ref: "#/components/schemas/corporate_id"
+    limit:
+      description: "The max number of results to be returned"
+      in: query
+      name: limit
+      schema:
+        $ref: "#/components/schemas/limit"
+    local_order_uuid:
+      description: "The order UUID of the target transaction"
+      in: path
+      name: local_order_uuid
+      required: true
+      schema:
+        $ref: "#/components/schemas/local_order_uuid"
+    page:
+      description: "Page number to be returned"
+      in: query
+      name: page
+      schema:
+        $ref: "#/components/schemas/page"
+    start_date:
+      description: "The lower bound for order creation date and time (UTC) to be returned"
+      in: query
+      name: start_date
+      schema:
+        $ref: "#/components/schemas/start_date"
+    end_date:
+      description: "The exclusive upper bound for order creation date and time (UTC) to be returned"
+      in: query
+      name: end_date
+      schema:
+        $ref: "#/components/schemas/end_date"
+    start_sync_date:
+      description: "The lower bound for order submission date and time (UTC) to be returned"
+      in: query
+      name: start_sync_date
+      schema:
+        $ref: "#/components/schemas/start_sync_date"
+    end_sync_date:
+      description: "The exclusive upper bound for order submission date and time (UTC) to be returned"
+      in: query
+      name: end_sync_date
+      schema:
+        $ref: "#/components/schemas/end_sync_date"
+    venue_id:
+      description: "The venue ID of the target transactions"
+      in: path
+      name: venue_id
+      required: true
+      schema:
+        $ref: "#/components/schemas/venue_id"
+    retrieval_status:
+      description: "Current retrieval status of the order. default value is completed"
+      in: query
+      name: retrieval_status
+      schema:
+        $ref: "#/components/schemas/retrieval_status"
+    x_api_key:
+      name: X-API-Key
+      in: header
+      required: true
+      schema:
+        type: string
+    status:
+      description: "Status of the quarantine order [DEADLETTER | DELETED]. Empty for orders with no status"
+      in: query
+      name: status
+      schema:
+        $ref: "#/components/schemas/status"    
+  schemas:
+    corporate_id:
+      example: 1238
+      type: integer
+    custom_field:
+      description: "Connect-configured custom field"
+      properties:
+        key:
+          description: "Connect-configured Custom Field key"
+          example: Buyer
+          type: string
+          maxLength: 100
+        name:
+          description: "Connect-configured Custom Field name"
+          example: "Merchandise Buyer"
+          type: string
+          maxLength: 255
+        value:
+          example: "Sally M."
+          type: string
+          maxLength: 65535
+      type: object
+    discount:
+      properties:
+        amount:
+          description: "Currency amount of the discount applied multiplied by the quantity"
+          example: "-1.1"
+          type: string
+          format: float
+        index:
+          description: "Order of the discount applied"
+          example: 1
+          type: integer
+        name:
+          description: "Connect-configured reduction name"
+          example: "Gold Tier 10%"
+          type: string
+          maxLength: 255
+        reference:
+          description: "Connect-configured reference ID for the discount"
+          example: SomeUniqueValue
+          type: string
+          maxLength: 50
+        type:
+          description: "The type of discount applied"
+          enum:
+            - FLAT
+            - PERCENT
+          example: PERCENT
+          type: string
+        value:
+          description: "Value of the percent or flat amount to be discounted"
+          example: "0.1"
+          type: string
+          format: float
+        metadata:
+          description: "External data of the discount (no max length)"
+          example: "{\"id\":\"silver\",\"display_name\":\"Discount Validation Interface\",\"integration_id\":95,\"entry_method\":\"K\"}"
+          type: string
+      type: object
+    end_date:
+      description: "Date/time the transaction was created in UTC"
+      example: "2021-05-26T00:01:00Z"
+      type: string
+    start_date:
+      description: "Date/time the transaction was created in UTC"
+      example: "2021-05-24T00:01:00Z"
+      type: string
+    end_sync_date:
+      description: "Date/time the transaction was synced in UTC"
+      example: "2021-05-26T00:01:00Z"
+      type: string
+    start_sync_date:
+      description: "Date/time the transaction was synced in UTC"
+      example: "2021-05-24T00:01:00Z"
+      type: string
+    fee:
+      type: object
+      properties:
+        amount:
+          type: string
+          format: float
+          example: "5.50"
+          description: "Currency amount of the fee applied"
+        name:
+          type: string
+          example: "10% Corkage Fee"
+          description: "Connect-configured fee name"
+          maxLength: 255
+        index:
+          type: integer
+          example: 1
+          description: "Order of the fee applied"
+        class:
+          type: string
+          enum:
+            - FEE
+            - SERVICE CHARGE
+            - GRATUITY
+            - TIP
+        type:
+          type: string
+          example: "PERCENT"
+          description: "The type of fee applied"
+          enum:
+            - FLAT
+            - PERCENT
+        value:
+          type: string
+          format: float
+          example: "0.1"
+          description: "Value of the fee applied"
+        taxes:
+          type: array
+          items:
+            $ref: "#/components/schemas/tax"
+    item:
+      properties:
+        custom_fields:
+          items:
+            $ref: "#/components/schemas/custom_field"
+          type: array
+        discounts:
+          items:
+            $ref: "#/components/schemas/discount"
+          type: array
+        identifiers:
+          properties:
+            item_id:
+              description: "Connect-assigned unique item identifier"
+              example: 47391
+              type: integer
+            name:
+              description: "Connect-configured item name"
+              example: Cheeseburger
+              type: string
+              maxLength: 200
+            display_name:
+              description: "Connect-configured item display name"
+              example: Cheeseburger
+              type: string
+              maxLength: 200
+            sku:
+              description: "Connect-configured item SKU"
+              example: "5834b8503840"
+              type: string
+            external_id:
+              description: "Connect-configured item External ID"
+              example: "AA749f04948"
+              type: string
+            unique_id:
+              description: "Unique identifier for the item, which may or may not be unique. Items with the same ID will be grouped together in reports"
+              example: "AB123"
+          type: object
+        index:
+          description: "Relative position of the item in the cart, used in other references, one-based"
+          example: 1
+          type: integer
+        line_item_uuid:
+          description: "Appetize-generated identifier for this item cart sale"
+          example: "ae76b6c4-6c35-42a5-93f9-ea6d60c642de"
+          format: uuid
+          type: string
+        operation:
+          description: "Indicates if this item is an item sale or an item refund"
+          enum:
+            - SALE
+            - REFUND
+          example: "SALE"
+          type: string
+        parent_item_uuid:
+          description: Appetize-generated identifier for the parent. It is only present if the item is a modifier."
+          example: "91105ae1-c3bb-43bb-bd4b-2b13a693701d"
+          format: uuid
+          type: string
+        prices:
+          properties:
+            original:
+              description: "The extended price configured in Connect"
+              example: "12.0"
+              type: string
+              format: string
+            sold:
+              description: "The extended price net of all adjustements, discounts, and fees"
+              example: "11.45"
+              type: string
+              format: string
+          type: object
+        taxes:
+          type: array
+          items:
+            $ref: "#/components/schemas/tax"
+        quantity:
+          description: "Quantity of the item sold"
+          example: "2.0"
+          format: float
+          type: string
+        measure:
+          properties:
+            unit:
+              type: string
+              example: "lb"
+              description: "Connect-configured item unit"
+              default: "each"
+            tare:
+              type: string
+              example: "0.45"
+              description: "Connect-assigned tare weight"
+            is_manual:
+              type: boolean
+              example: true
+              description: "Indicate if net_weight was assigned manually"
+            net_weight:
+              type: string
+              example: "3.45"
+              description: "Quantity of the item sold"
+        kitchen_id:
+          description: "The kitchen ID associated with this item"
+          example: "123"
+          type: string
+        original_order_id:
+          description: "If this is a refunded item, the original id of the order were the purchase was made"
+          example: "12345678"
+          type: string  
+      type: object
+    limit:
+      default: 100
+      example: 100
+      type: integer
+      maximum: 500
+    list_transactions_result:
+      properties:
+        orders:
+          type: array
+          items:
+            type: object
+            properties:
+              local_order_uuid:
+                $ref: "#/components/schemas/local_order_uuid"
+              corporate_id:
+                description: "Connect-assigned corporation ID"
+                example: 40
+                type: integer
+              external_vendor_id:
+                description: "Connect-configured External Vendor ID"
+                example: "BH0105"
+                nullable: true
+                type: string
+              vendor_id:
+                description: "Connect-assigned vendor ID"
+                example: 865
+                type: integer
+              venue_id:
+                description: "Connect-assigned venue ID"
+                example: 1371
+                type: integer
+              end_date:
+                description: "Date/time the transaction was created in UTC"
+                example: "2021-07-21T18:56:32Z"
+                type: string
+              sync_date:
+                description: "Date/time the transaction was synced in UTC"
+                example: "2021-07-21T18:56:32Z"
+                type: string
+              retrieval_status:
+                description: "If retrieved order has all available values or it is missing some"
+                example: "completed"
+                type: string
+                enum: [ completed, incomplete ]
+        pagination:
+          $ref: "#/components/schemas/pagination"
+    list_quarantine_orders_result:
+      properties:
+        orders:
+          type: array
+          items:
+            type: object
+            properties:
+              local_order_uuid:
+                $ref: "#/components/schemas/local_order_uuid"
+              corporate_id:
+                description: "Connect-assigned corporation ID"
+                example: 40
+                type: integer
+              external_vendor_id:
+                description: "Connect-configured External Vendor ID"
+                example: "BH0105"
+                nullable: true
+                type: string
+              vendor_id:
+                description: "Connect-assigned vendor ID"
+                example: 865
+                type: integer
+              venue_id:
+                description: "Connect-assigned venue ID"
+                example: 1371
+                type: integer
+              date:
+                description: "Date/time the transaction was quarantined in UTC"
+                example: "2021-07-21T18:56:32Z"
+                type: string
+              status:
+                description: "Status of the order"
+                example: ""
+                type: string
+                enum: [ DELETED, DEADLETTER ]
+              errors:
+                description: "The errors the order had"
+                type: array
+                items:
+                  properties:
+                    Fields: 
+                      description: "fields that are missing from the transaction"
+                      type: array
+                      items:
+                        type: string
+                        example: "order.user"
+                    Errors:
+                      type: string
+                      description: "Error message from the consumer service"
+                      example: "User id not exists" 
+        pagination:
+          $ref: "#/components/schemas/pagination"      
+    local_order_uuid:
+      description: "The presented device order UUID"
+      example: "ee23e571-ca78-4578-a0d1-8ecfe104d04f"
+      type: string
+    location:
+      description: "Identifiers for the location originating the ordere happened"
+      properties:
+        custom_fields:
+          items:
+            $ref: "#/components/schemas/custom_field"
+          type: array
+        vendor_id:
+          description: "Connect-assigned vendor ID"
+          example: 865
+          type: integer
+        vendor_name:
+          description: "Connect-configured vendor name"
+          example: Burgerland
+          type: string
+          maxLength: 200
+        venue_id:
+          description: "Connect-assigned venue ID"
+          example: 1371
+          type: integer
+        venue_name:
+          description: "Connect-configured venue name"
+          example: "Big Island Venue"
+          type: string
+          maxLength: 200
+        corporate_id:
+          description: "Connect-assigned corporation ID"
+          example: 40
+          type: integer
+        external_vendor_id:
+          description: "Connect-configured External Vendor ID"
+          example: "BH0105"
+          nullable: true
+          type: string
+      type: object
+    order:
+      properties:
+        items:
+          items:
+            $ref: "#/components/schemas/item"
+          type: array
+        local_order_id:
+          description: "The presented device order ID printed on receipts and shown in Connect"
+          example: "A0001999920063009000001"
+          type: string
+        local_order_uuid:
+          description: "The order UUID of the target transaction"
+          example: "ee23e571-bt75-4578-a0d1-7ecfe306d04f"
+          type: string
+        location:
+          $ref: "#/components/schemas/location"
+        order_id:
+          description: "The database identity value after the order is stored in Connect"
+          example: 1234
+          type: integer
+        payments:
+          items:
+            $ref: "#/components/schemas/payment"
+          type: array
+        fees:
+          type: array
+          items:
+            $ref: "#/components/schemas/fee"
+        origin:
+          description: Appetize application where this order was created"
+          example: "appetize_android"
+          type: string
+          maxLength: 50
+        terminals:
+          items:
+            $ref: "#/components/schemas/terminal"
+          type: array
+        time:
+          properties:
+            end:
+              description: "Date/time the transaction was created in UTC"
+              example: "2020-11-21T14:00:00Z"
+              format: date-time
+              type: string
+            sync:
+              description: "Date/time the transaction was synced in UTC"
+              example: "2020-11-21T14:00:00Z"
+              format: date-time
+              type: string
+            timezone:
+              example: "America/New_York"
+              description: "Connect-configured venue time zone"
+              type: string
+          type: object
+        users:
+          items:
+            $ref: "#/components/schemas/user"
+          type: array
+        event:
+          description: "Event associated to the order"
+          properties:
+            id:
+              description: "Connect-assigned event ID"
+              example: 40
+              type: integer
+        order_type:
+          description: "The order type, as passed in from the client in the case of Ordering API, and as set in the terminal role in the case of Activate orders."
+          properties:
+            id:
+              description: "Connect-assigned order type ID"
+              example: 40
+              type: integer
+            name:
+              description: "Connect-assigned order type name"
+              example: "POS"
+              type: string
+        retrieval_status:
+          description: "If retrieved order has all available values or it is missing some"
+          example: "completed"
+          enum: [ completed, incomplete ]
+          type: string
+        seat_id:
+          description: "Connect-assigned seat ID"
+          example: 40
+          type: integer
+        customer_id:
+          description: "Connect-assigned customer ID"
+          example: "7037796"
+          type: string
+      type: object
+    page:
+      default: 1
+      example: 50
+      type: integer
+    pagination:
+      properties:
+        limit:
+          default: 50
+          example: 1
+          type: integer
+        page:
+          default: 1
+          example: 3
+          type: integer
+        total_pages:
+          example: 4
+          type: integer
+        total_results:
+          example: 4
+          type: integer
+      required:
+        - page
+        - limit
+        - total_results
+        - total_pages
+      type: object
+    payment:
+      description: "Instance of a payment made on the order"
+      properties:
+        amount:
+          description: "The amount of money which was paid on with this payment"
+          example: "43.74"
+          format: float
+          type: string
+        change:
+          description: "The amount of money which was given back to the customer in change"
+          example: "6.26"
+          format: float
+          type: string
+        tip:
+          description: "The amount of money which was given as tip"
+          example: "1.26"
+          format: float
+          type: string
+        index:
+          description: "Relative sequence of payment applied"
+          example: 1
+          type: integer
+        tender_id:
+          description: "Connect-configured tender id, or Connect-defined tender id if null"
+          type: integer
+        tender_name:
+          description: "Name of the tender"
+          example: CREDIT
+          type: string
+          maxLength: 200
+        metadata:
+          description: "External data of the payment (no max length)"
+          example: "{\"AuthCurrency\":\"USD\",\"CaptureMethod\":\"MANUAL\",\"DeviceTransactionID\":\"260521ED3-8F67B6C8-DB4F-41CB-879D-006EAFE4409F\",\"ReqCurrency\":\"USD\"}"
+          type: string
+        transaction_id:
+          description: "Transaction id of the payment (not in all payment methods)"
+          example: "260521ED3-8F67B6C8-DB4F-41CB-879D-006EAFE4409F"
+          type: string
+          maxLength: 100
+      type: object
+    tax:
+      type: object
+      description: "Tax assessed on an item, fee or other taxable good"
+      properties:
+        amount:
+          type: string
+          example: "0.53"
+          description: "The calculated mount of tax assessed"
+        class:
+          type: string
+          enum:
+            - INCLUSIVE
+            - EXCLUSIVE
+        type:
+          type: string
+          enum:
+            - PERCENTAGE
+            - FLAT
+            - TABLE
+        name:
+          type: string
+          example: "Incl State Tax 5%"
+          maxLength: 20
+        index:
+          type: integer
+          example: 1
+        rate:
+          type: string
+          example: "5.0"
+    terminal:
+      description: "Information about the terminal used during the order lifetime"
+      properties:
+        id:
+          default: "9999"
+          description: "Locally configured terminal ID"
+          example: "0012"
+          type: string
+          maxLength: 40
+      type: object
+    user:
+      description: "Information about the users (employees) that handled the order during its lifetime"
+      properties:
+        login:
+          description: "Connect-configured employee users' login"
+          example: "59385859"
+          type: string
+        name:
+          description: "Connect-configured employee users' Name as defined in Connect"
+          example: "Jane Smith"
+          type: string
+          maxLength: 200
+        known_as:
+          description: "Connect-configured employee users' Known As name displayed on receipts"
+          example: "Jane S."
+          type: string
+          maxLength: 200
+        external_id:
+          description: "Connect-configured employee users' external ID"
+          example: "SAP0001289"
+          type: string
+          maxLength: 15
+      type: object
+    venue_id:
+      example: 1238
+      type: integer
+    retrieval_status:
+      example: "completed"
+      type: string
+      default: "completed"
+      enum: [ completed, incomplete ]
+    status:
+      example: "DEADLETTER"
+      type: string
+      default: ""
+      enum: [ "DEADLETTER", "DELETED",  ""]  
+  responses:
+    '400':
+      description: bad request
+    '401':
+      description: unauthorized
+    '403':
+      description: forbidden
+    '404':
+      description: not found
+    '415':
+      description: unsupported media type in content-type header
+    '422':
+      description: unprocessable entity
+    '500':
+      description: internal server error
+```
+{% endtab %}
+
+
+{% endtabs %}

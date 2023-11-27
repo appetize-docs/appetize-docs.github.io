@@ -1,0 +1,137 @@
+# Welcome to Jekyll!
+#
+# This config file is meant for settings that affect your whole blog, values
+# which you are expected to set up once and rarely edit after that. If you find
+# yourself editing this file very often, consider using Jekyll's data files
+# feature for the data you need to update frequently.
+#
+# For technical reasons, this file is *NOT* reloaded automatically when you use
+# 'bundle exec jekyll serve'. If you change this file, please restart the server process.
+#
+# If you need help with YAML syntax, here are some quick references for you:
+# https://learn-the-web.algonquindesign.ca/topics/markdown-yaml-cheat-sheet/#yaml
+# https://learnxinyminutes.com/docs/yaml/
+#
+# Site settings
+# These are used to personalize your new site. If you look in the HTML files,
+# you will see them accessed via {{ site.title }}, {{ site.email }}, and so on.
+# You can create any custom variable you would like, and they will be accessible
+# in the templates via {{ site.myvariable }}.
+
+title: Appetize Developer Center
+product_name: "Appetize"
+email: appetize@shift4.com
+description: >- # this means to ignore newlines until "baseurl:"
+  Welcome to the Developer Center for Appetize!
+baseurl: "/" # the subpath of your site, e.g. /blog
+url: "" # the base hostname & protocol for your site, e.g. http://example.com
+
+
+# Build settings
+# remote_theme: just-the-docs/just-the-docs@v0.7.0
+theme: just-the-docs
+favicon_ico: "/assets/images/favicon.ico"
+logo: "/assets/images/logo-aside.png"
+color_scheme: appetize
+nav_next_prev: true
+
+collections:
+  guides:
+    output: true
+  api:
+    output: true
+  pages:
+    output: true
+
+just_the_docs:
+  collections:
+    guides:
+      name: Guides
+      nav_exclude: false
+      nav_fold: false
+      search_exclude: false
+    api:
+      name: API Reference
+      nav_exclude: false
+      nav_fold: false
+      search_exclude: false
+    pages:
+      name: Pages
+      nav_exclude: true
+      nav_fold: false
+      search_exclude: false
+
+mermaid:
+  # Version of mermaid library
+  # Pick an available version from https://cdn.jsdelivr.net/npm/mermaid/
+  version: "9.1.3"
+
+aux_links:
+  "Appetize support":
+    - "https://support.appetize.com/"
+
+#nav_external_links:
+#  - title: VenueNext docs
+#    url: https://venuenext.dev/
+#    hide_icon: false # set to true to hide the external link icon - defaults to false
+#    opens_in_new_tab: true # set to true to open this link in a new tab - defaults to false
+#  - title: VenueNext docs
+#    url: https://venuenext.dev/
+#    hide_icon: false # set to true to hide the external link icon - defaults to false
+#    opens_in_new_tab: true # set to true to open this link in a new tab - defaults to false
+
+enable_copy_code_button: true
+
+back_to_top: true
+back_to_top_text: "Back to top"
+
+callouts_level: quiet # or loud
+callouts:
+  highlight:
+    color: yellow
+  important:
+    title: Important
+    color: blue
+  new:
+    title: New
+    color: green
+  note:
+    title: Note
+    color: purple
+  warning:
+    title: Warning
+    color: red
+
+
+plugins:
+  - jekyll-paginate
+  - jekyll-sitemap
+  - jekyll-gist
+  - jekyll-feed
+  - jemoji
+  - jekyll-include-cache
+  - jekyll-tabs
+
+
+include:
+  - _changelog
+
+# Exclude from processing.
+# The following items will not be processed, by default.
+# Any item listed under the `exclude:` key here will be automatically added to
+# the internal "default list".
+#
+# Excluded items can be processed by explicitly listing the directories or
+# their entries' file path in the `include:` list.
+#
+#exclude:
+#   - .sass-cache/
+#   - .jekyll-cache/
+#   - gemfiles/
+#   - Gemfile
+#   - Gemfile.lock
+#   - node_modules/
+#   - vendor/bundle/
+#   - vendor/cache/
+#   - vendor/gems/
+#   - vendor/ruby/

@@ -1,0 +1,6960 @@
+---
+title: "Ordering API - YAML Files"
+permalink: /page/oapi-yaml-files
+published: true
+layout: default
+createdAt: "2023-06-02T14:59:15.746Z"
+updatedAt: "2023-09-11T14:22:08.143Z"
+---
+
+{: .new-title }
+> OAPI 2.11.2 - Current Version
+>
+> Released on: 07/19/2023
+>
+> No changes to YAML File
+
+{: .important-title }
+> OAPI 2.11.1
+>
+> Released on 06/28/2023
+>
+> No changes to YAML File
+
+{: .important-title }
+> OAPI 2.11.0
+>
+> Released on 04/20/2023
+>
+> Updated YAML file
+
+
+
+{% tabs oapi %}
+
+{% tab oapi v2.11.0
+ %}
+```yaml
+openapi: 3.0.0
+info:
+  title: Ordering API
+  description: |
+    Ordering API
+  contact: { }
+  version: "v2.11.0"
+servers:
+  - description: Appetize API URL. This URL will be provided by our team.
+    url: https://{environment}.appetize.com
+paths:
+  /:
+    get:
+      tags:
+        - Online Ordering
+      summary: Appetize Ordering API Base Url
+      description: |
+        * **Payload**: None
+      operationId: OrderingBaseGet
+      security:
+        - BearerAuth: [ ]
+      responses:
+        200:
+          description: "Documentation Forthcoming"
+          headers:
+            Date:
+              style: simple
+              explode: false
+              schema:
+                type: string
+                default: Tue, 14 May 2019 22:30:53 GMT
+            Server:
+              style: simple
+              explode: false
+              schema:
+                type: string
+                default: nginx
+            Content-Length:
+              style: simple
+              explode: false
+              schema:
+                type: string
+                default: "156"
+            Connection:
+              style: simple
+              explode: false
+              schema:
+                type: string
+                default: keep-alive
+      deprecated: false
+  /auth/ordering:
+    post:
+      tags:
+        - Online Ordering
+      summary: Authentication of API Key
+      description: |-
+        Authenticates the client into Connect.
+
+        * **Payload**: * **Success**: Returns a *token*. This token is needed to make all subsequent calls to the service.
+        * **Failure**: Any other response
+        * **Note:** This endpoint is actually making reference to the POST /auth from the Auth service endpoint; but being so relevant to OAPI, that it has been included here.  You will note here that /auth is an internal server redirection to the proper /ordering endpoint in the Auth service.
+      operationId: OrderingAuthPost
+      security:
+        - ApiKeyAuth: [ ]
+      responses:
+        200:
+          description: ""
+          headers:
+            Server:
+              style: simple
+              explode: false
+              schema:
+                type: string
+                default: nginx/1.13.9
+            Date:
+              style: simple
+              explode: false
+              schema:
+                type: string
+                default: Thu, 21 Feb 2019 16:29:06 GMT
+          content:
+            application/com.appetize.oapi.token.v1+json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+              examples:
+                response:
+                  value:
+                    auth_key: jwt-encoded-auth-key
+        "401":
+          $ref: '#/components/responses/401_Invalid_XAPIKey'
+      deprecated: false
+  /ordering/vendors:
+    get:
+      tags:
+        - Online Ordering
+      summary: Get List of Vendors
+      description: |-
+        Returns complete list of vendors provided in the given credentials. Access to vendors is granted after successful request to */auth/ordering* endpoint based on *X-API-Key*).
+        <br />List can be filtered by optional query parameters:
+         * seat ID - internal seat identifier assigned to vendors. Useful when vendor list must be narrowed down and displayed for the specific seat only (please see */venues/{venue_id}/levels/{level_id}/seats* endpoint for complete list of seat IDs)
+         * venue ID - internal venue identifier associated with vendors. Since the complete list contains all venues/vendors provided in the credentials this filter could be used when vendor list must be retrieved for specific venue only
+         * external ID - external identifier assigned to vendors
+      operationId: OrderingVendorsGet
+      security:
+        - BearerAuth: [ ]
+          ApiKeyAuth: [ ]
+      parameters:
+        - name: seat_id
+          in: query
+          description: Filter vendors list by seat ID
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: number
+        - name: venue_id
+          in: query
+          description: Filter vendors list by venue ID
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+        - name: external_id
+          in: query
+          description: Filter vendors list by external ID
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Returns an array of vendors optionally filtered by seat ID, venue ID, external ID or empty array if not a single vendor matches optional filters
+          content:
+            application/com.appetize.oapi.vendor.v1+json:
+              schema:
+                $ref: '#/components/schemas/VendorsResponse'
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+          content:
+            application/vnd.appetize+json;version=1:
+              schema:
+                $ref: '#/components/schemas/AuthenticationBearerFailure'
+              examples:
+                "Incorrect Claim type":
+                  description: "Token is not External V1 Claims"
+                  value:
+                    Code: 401
+                    message: "incorrect claim type"
+                "Missing Claims":
+                  description: "Token claims not found in request token"
+                  value:
+                    Code: 401
+                    message: "missing claims"
+                "Empty Claims":
+                  description: "Token claims is nil"
+                  value:
+                    Code: 401
+                    message: "access control Claims is nil"
+                "Invalid Claims Content":
+                  description: "Invalid token syntax, token can not be parsed"
+                  value:
+                    Code: 401
+                    message: "strconv.Atoi: {strconv error}"
+                "Invalid Token Signature":
+                  description: "Invalid token signature"
+                  value:
+                    Code: 401
+                    message: "failed parsing claims: signature is invalid"
+                "Claims without Venues":
+                  description: "Token claims don't contains any venue"
+                  value:
+                    Code: 401
+                    message: "no venues found in claims"
+                "Corporate not found in Claims":
+                  description: "Corporate not found in token claims"
+                  value:
+                    Code: 401
+                    message: "corporate ID {Corporate ID} not found in claims"
+                "Venue not found in Claims":
+                  description: "Venue not found in token claims"
+                  value:
+                    Code: 401
+                    message: "venue ID {Venue ID} not found in claims"
+                "Vendor not found in Claims":
+                  description: "Vendor not found in token claims"
+                  value:
+                    Code: 401
+                    message: "vendor ID {Vendor ID} not found in claims"
+        "422":
+          description: Unprocessable entity
+        "500":
+          description: Server error
+  /ordering/venues/{venue_id}/vendors/{vendor_id}:
+    get:
+      tags:
+        - Online Ordering
+      summary: Get Venue
+      description: |-
+        Basic information around the default location (Venue / Vendor) assigned to the given credentials.
+      operationId: OrderingStoreGet
+      security:
+        - BearerAuth: [ ]
+          ApiKeyAuth: [ ]
+      parameters:
+        - $ref: '#/components/parameters/Venue_id'
+        - $ref: '#/components/parameters/Vendor_id'
+      responses:
+        "200":
+          description: Store Response (Internally Vendor)
+          content:
+            application/com.appetize.oapi.vendor.v1+json:
+              schema:
+                $ref: '#/components/schemas/Vendor'
+        "401":
+          $ref: '#/components/responses/401'
+        "404":
+          $ref: '#/components/responses/404_Store_Not_Found'
+  /ordering/venues/{venue_id}/vendors/{vendor_id}/menu:
+    get:
+      tags:
+        - Online Ordering
+      summary: Get Menu
+      description: |-
+        Returns the entire assigned menu for a given vendor, or with the 'since' query parameter, a delta including deleted and deactivated items.
+      security:
+        - BearerAuth: [ ]
+      parameters:
+        - name: since
+          in: query
+          description: Returns the delta from the UTC timestamp passed in.
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+            default: "1579098572"
+        - name: price_level
+          in: query
+          schema:
+            type: string
+            enum: [ "VENDOR_OVERRIDE_ACTIVE", "VENDOR_ACTIVE", "EVENT", "EVENT_TYPE", "VENUE_OVERRIDE_ACTIVE", "VENUE_ACTIVE", "VENUE_DEFAULT", "CORPORATE_DEFAULT" ]
+            default: "Vendor Override Active Price"
+        - $ref: '#/components/parameters/Venue_id'
+        - $ref: '#/components/parameters/Vendor_id'
+        - $ref: '#/components/parameters/MenuV2RequestAcceptHeader'
+      responses:
+        "200":
+          description: Returns an array of dayparts available for the vendor and the entire vendor menu <br> associated to each of those DayParts.
+          content:
+            application/com.appetize.oapi.menu.v2+json:
+              schema:
+                $ref: '#/components/schemas/MenuV2Response'
+            application/com.appetize.oapi.menu.v1+json:
+              schema:
+                $ref: '#/components/schemas/MenuResponse'
+        "401":
+          $ref: '#/components/responses/401'
+        "404":
+          $ref: '#/components/responses/404_Menu_Not_Found'
+  /ordering/venues/{venue_id}/vendors/{vendor_id}/items/{item_id}:
+    get:
+      tags:
+        - Online Ordering
+      summary: Get Item by ID
+      description: |-
+        Returns a single item, for the given Venue, and Vendor.
+      security:
+        - BearerAuth: [ ]
+          ApiKeyAuth: [ ]
+      parameters:
+        - $ref: '#/components/parameters/Item_id'
+        - $ref: '#/components/parameters/Venue_id'
+        - $ref: '#/components/parameters/Vendor_id'
+        - name: price_level
+          in: query
+          schema:
+            type: string
+            enum: [ "VENDOR_OVERRIDE_ACTIVE", "VENDOR_ACTIVE", "EVENT", "EVENT_TYPE", "VENUE_OVERRIDE_ACTIVE", "VENUE_ACTIVE", "VENUE_DEFAULT", "CORPORATE_DEFAULT" ]
+            default: "Vendor Override Active Price"
+      responses:
+        "200":
+          description: Item response
+          content:
+            application/com.appetize.oapi.item.v1+json:
+              schema:
+                $ref: '#/components/schemas/GetItemResponseV1'
+        "401":
+          $ref: '#/components/responses/401'
+        "404":
+          $ref: '#/components/responses/404_Menu_Not_Found'
+        "422":
+          $ref: '#/components/responses/422'
+  /ordering/venues/{venue_id}/vendors/{vendor_id}/items:
+    #documentation ticket PLAT-680
+    get:
+      tags:
+        - Online Ordering
+      summary: Get Items with Optional Filters SKU, External ID or Item IDs
+      description: |-
+        Returns an array of items, for the given Venue, and Vendor. \
+        This endpoint can filter its response if the query string parameter 'ids' is present in the request. If the request doesn't contain any query string parameter, the response is not filtered. \
+        This endpoint does not accept pagination parameters, and the result is not limited.
+      security:
+        - BearerAuth: [ ]
+      parameters:
+        - $ref: '#/components/parameters/Venue_id'
+        - $ref: '#/components/parameters/Vendor_id'
+        - $ref: '#/components/parameters/ItemV2RequestAcceptHeader'
+        - $ref: '#/components/parameters/ids'
+        - $ref: '#/components/parameters/sku'
+        - $ref: '#/components/parameters/external_ids'
+        - name: price_level
+          in: query
+          schema:
+            type: string
+            enum: [ "VENDOR_OVERRIDE_ACTIVE", "VENDOR_ACTIVE", "EVENT", "EVENT_TYPE", "VENUE_OVERRIDE_ACTIVE", "VENUE_ACTIVE", "VENUE_DEFAULT", "CORPORATE_DEFAULT" ]
+            default: "Vendor Override Active Price"
+      responses:
+        "200":
+          description: Get items response
+          content:
+            application/com.appetize.oapi.item.v2+json:
+              schema:
+                $ref: '#/components/schemas/GetItemResponseV2'
+            application/com.appetize.oapi.item.v1+json:
+              schema:
+                $ref: '#/components/schemas/GetItemResponseV1'
+        "401":
+          $ref: '#/components/responses/401'
+        "404":
+          $ref: '#/components/responses/404_Store_Not_Found'
+  /ordering/venues/{venue_id}/vendors/{vendor_id}/discounts:
+    get:
+      tags:
+        - Online Ordering
+      summary: Get Discounts
+      description: |-
+        This endpoint will retrieve a list of discounts that are available
+        to a given vendor (revenue center)
+      security:
+        - BearerAuth: [ ]
+          ApiKeyAuth: [ ]
+      parameters:
+        - $ref: '#/components/parameters/Venue_id'
+        - $ref: '#/components/parameters/Vendor_id'
+        - in: query
+          name: active
+          description: |-
+            Filters discounts to only actively available ones \
+            **If that query param is not sent**, the default value will be **false**
+            - **True** : returns only the active discounts
+            - **False** : returns both active and non active discounts
+
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: boolean
+            default: false
+          examples:
+            true:
+              summary: "true"
+              value: true
+            false:
+              summary: "false"
+              value: false
+      responses:
+        "200":
+          description: Discounts Response
+          content:
+            application/vnd.appetize+json;version=1:
+              schema:
+                $ref: '#/components/schemas/DiscountsResponse'
+        "401":
+          $ref: '#/components/responses/401'
+  /ordering/corporates/{corporate_id}/venues:
+    #documentation ticket PLAT-680
+    get:
+      tags:
+        - Online Ordering
+      summary: Get Venue Information Based on Corporate Identifier
+      description: |-
+        Returns an array of venues, for the given corporate id. \
+      security:
+        - BearerAuth: [ ]
+      parameters:
+        - $ref: '#/components/parameters/Corporate_id'
+      responses:
+        "200":
+          description: Get venues response
+          content:
+            application/com.appetize.oapi.venue.v1+json:
+              schema:
+                $ref: '#/components/schemas/GetVenuesResponse'
+        "401":
+          $ref: '#/components/responses/401'
+        "404":
+          $ref: '#/components/responses/404_Store_Not_Found'
+  /ordering/venues/{venue_id}/vendors/{vendor_id}/cart/calculate:
+    post:
+      tags:
+        - Online Ordering
+      summary: Cart Calculate v2
+      description: |-
+        This endpoint takes a `CartRequest`, performs calculations and validations on it, and returns a signed version that can be submitted to the `Checkout` endpoint.
+        It is important to note that there are some options that may apply depending on your environment, corporate, venue or vendor configuration:
+
+        - Calculate Fees: enable or disable fees calculation that comes from connect.
+        - Calculate Reductions: enable or disable reductions calculation that comes from connect.
+        - Calculate Taxes: enable or disable taxes calculation that comes from connect.
+        - Calculate Modifier Items: enable or disable modifiers items calculation that comes from connect.
+        - Calculate Payment Partner Integrations *also know as PPI Discounts*:  enable or disable PPI Discounts calculation that is used by AX/IX to integrate Stored Values (SV) and Loaded Values (LV) payments easily.
+        - Validate Prices: validate each item if the price is correct and if it belongs to the venue/vendor station
+        - Validate Cart Totals: validate if calculated subtotal is what is expected, you can not use this along with (Fees, Reductions, Taxes, Modifiers or PPI Discounts)
+
+        > Additional note: When passing in a cart, use `tip_status_closed=false` to force the tip status to be left open on cart checkout, allowing for a tip to be added in a subsequent tip adjustment endpoint.
+      security:
+        - BearerAuth: [ ]
+      parameters:
+        - $ref: '#/components/parameters/Venue_id'
+        - $ref: '#/components/parameters/Vendor_id'
+        - $ref: '#/components/parameters/CartRequestHeaderContentType'
+      requestBody:
+        description: Calculate Cart Request
+        content:
+          application/com.appetize.oapi.cart.v2+json:
+            schema:
+              $ref: '#/components/schemas/CalculateCartWithModifiersRequest'
+          application/com.appetize.oapi.cart.v1+json:
+            schema:
+              $ref: '#/components/schemas/CalculateCartRequest'
+        required: true
+      responses:
+        "200":
+          description: Calculate Cart Response
+          content:
+            application/com.appetize.oapi.cart.v2+json:
+              schema:
+                $ref: '#/components/schemas/CalculateCartWithModifiersResponse'
+            application/com.appetize.oapi.cart.v1+json:
+              schema:
+                $ref: '#/components/schemas/CalculateCartResponse'
+        "400":
+          $ref: '#/components/responses/400_Calculate_Malformed'
+        "401":
+          $ref: '#/components/responses/401'
+        "422":
+          $ref: '#/components/responses/422'
+  /ordering/venues/{venue_id}/vendors/{vendor_id}/checkout:
+    post:
+      tags:
+        - Online Ordering
+      summary: Cart Checkout v2
+      description: |-
+        This endpoint processes a signed cart, which has previously been
+        generated via the /cart/calculate endpoint.  For external payments, we will
+        provide the payment parameters for you to pass in, so that we bypass our internal
+        payment verification steps.
+        <br>
+        It is also important to note that if an email confirmation is required, the field email must be non empty in the signed_cart and
+        an extra field named "send_email_receipt", must be manually added and set to true at the root level of the payload's body.
+      security:
+        - BearerAuth: [ ]
+          ApiKeyAuth: [ ]
+      parameters:
+        - name: X-Order-Source
+          in: header
+          description: Order Source to provide visibility between the different products where the order is being made from.
+          required: false
+          schema:
+            type: string
+            items:
+              default: oapi
+              enum:
+                - oapi
+                - interact_web
+            example: oapi
+        - $ref: '#/components/parameters/Venue_id'
+        - $ref: '#/components/parameters/Vendor_id'
+        - $ref: '#/components/parameters/CartRequestHeaderContentType'
+      requestBody:
+        description: Checkout Request -- Send Payload From Cart Endpoint
+        content:
+          application/com.appetize.oapi.cart.v2+json:
+            schema:
+              $ref: '#/components/schemas/CheckoutRequestWithModifiers'
+          application/com.appetize.oapi.cart.v1+json:
+            schema:
+              $ref: '#/components/schemas/CheckoutRequest'
+        required: true
+      responses:
+        "200":
+          description: Checkout Response
+          content:
+            application/com.appetize.oapi.cart.v2+json:
+              schema:
+                $ref: '#/components/schemas/CheckoutResponse'
+            application/com.appetize.oapi.cart.v1+json:
+              schema:
+                $ref: '#/components/schemas/CheckoutResponse'
+        "400":
+          $ref: '#/components/responses/400_Checkout_Malformed'
+        "401":
+          $ref: '#/components/responses/401'
+        "422":
+          $ref: '#/components/responses/422'
+  /ordering/venues/{venue_id}/levels:
+    get:
+      tags:
+        - Online Ordering
+      summary: Get Levels
+      description: |-
+        Returns associated levels and their basic information for the venue. <br/>
+        A level can be one of many in a venue's layout and has the highest hierarchy of such layout; it can contain the other items like section, row and seat.(These details are not provided by this endpoint)
+      security:
+        - BearerAuth: [ ]
+      parameters:
+        - $ref: '#/components/parameters/Venue_id'
+      responses:
+        "200":
+          description: Levels successful response
+          content:
+            application/com.appetize.oapi.level.v1+json:
+              schema:
+                $ref: '#/components/schemas/LevelsResponse'
+        "401":
+          $ref: '#/components/responses/401'
+  /ordering/venues/{venue_id}/levels/{level_id}/seats:
+    get:
+      tags:
+        - Online Ordering
+      summary: Get Seats
+      description: |-
+        Returns associated seats for a given venue and that venue's level.
+      security:
+        - BearerAuth: [ ]
+      parameters:
+        - name: level_id
+          in: path
+          description: ID of the level
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - $ref: '#/components/parameters/Venue_id'
+      responses:
+        "200":
+          description: Levels Response
+          content:
+            application/com.appetize.oapi.seat.v1+json:
+              schema:
+                $ref: '#/components/schemas/SeatsResponse'
+        "400":
+          $ref: '#/components/responses/400'
+        "401":
+          $ref: '#/components/responses/401'
+  /ordering/venues/{venue_id}/vendors/{vendor_id}/fees:
+    get:
+      tags:
+        - Online Ordering
+      summary: Get Fees
+      description: |-
+        This endpoint returns the fees associated to the vendor_id and venue_id
+      security:
+        - BearerAuth: [ ]
+          ApiKeyAuth: [ ]
+      parameters:
+        - $ref: '#/components/parameters/Venue_id'
+        - $ref: '#/components/parameters/Vendor_id'
+        - name: account_type
+          in: query
+          required: true
+          style: form
+          explode: true
+          schema:
+            type: string
+            enum: [ "employee" ]
+        - name: account_id
+          in: query
+          required: true
+          style: form
+          explode: true
+          schema:
+            type: string
+            example: '1'
+        - name: only_auto_apply
+          in: query
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: boolean
+            example: false
+      responses:
+        "200":
+          description: Get Fees Response
+          content:
+            application/com.appetize.oapi.cart.v1+json:
+              schema:
+                $ref: '#/components/schemas/GetFeesResponse'
+        "400":
+          $ref: '#/components/responses/400'
+        "401":
+          $ref: '#/components/responses/401'
+  /ordering/pay/initialize_session:
+    post:
+      tags:
+        - Appetize Payment Layer integration
+      summary: Get Session Token
+      description: |-
+        This endpoint takes a terminal_id, amount and returns a session token for integrations endpoint
+      parameters:
+        - in: header
+          name: X-API-Key
+          description: X-API-Key is "Connect" api-key
+          schema:
+            type: string
+            format: uuid
+            example: 689f8852-8e18-4e4d-8591-b8ce64226fdb
+          required: true
+      security:
+        - BearerAuth: [ ]
+          ApiKeyAuth: [ ]
+      requestBody:
+        description: Get Session Token
+        content:
+          application/com.appetize.oapi.apl.v1+json:
+            schema:
+              $ref: '#/components/schemas/AplSessionTokenRequest'
+        required: true
+      responses:
+        200:
+          $ref: '#/components/responses/200_apl_session_token'
+        400:
+          $ref: '#/components/responses/400_apl'
+        401:
+          $ref: '#/components/responses/401_apl'
+        500:
+          $ref: '#/components/responses/500_apl'
+  /ordering/pay/payment:
+    post:
+      tags:
+        - Appetize Payment Layer integration
+      summary: Submit a Payment
+      description: |-
+        This endpoint takes a session_key and some additional settings and submits a payment
+      parameters:
+        - in: header
+          name: X-API-Key
+          description: X-API-Key is "Connect" api-key
+          schema:
+            type: string
+            format: uuid
+            example: 689f8852-8e18-4e4d-8591-b8ce64226fdb
+          required: true
+      security:
+        - BearerAuth: [ ]
+          ApiKeyAuth: [ ]
+      requestBody:
+        description: Submits a payment
+        content:
+          application/com.appetize.oapi.apl.v1+json:
+            schema:
+              $ref: '#/components/schemas/AplPaymentRequest'
+        required: true
+      responses:
+        200:
+          $ref: '#/components/responses/200_apl_payment'
+        400:
+          $ref: '#/components/responses/400_apl'
+        401:
+          $ref: '#/components/responses/401_apl'
+        500:
+          $ref: '#/components/responses/500_apl'
+  /ordering/pay/query_token:
+    post:
+      tags:
+        - Appetize Payment Layer integration
+      summary: Retrieve Token Information
+      description: |-
+        This endpoint takes a terminal_id and token and retrieves cardholder information associated with a token
+      parameters:
+        - in: header
+          name: X-API-Key
+          description: X-API-Key is "Connect" api-key
+          schema:
+            type: string
+            format: uuid
+            example: 689f8852-8e18-4e4d-8591-b8ce64226fdb
+          required: true
+      security:
+        - BearerAuth: [ ]
+          ApiKeyAuth: [ ]
+      requestBody:
+        description: Retrieve token information
+        content:
+          application/com.appetize.oapi.apl.v1+json:
+            schema:
+              $ref: '#/components/schemas/AplQueryTokenRequest'
+        required: true
+      responses:
+        200:
+          $ref: '#/components/responses/200_apl_query_token'
+        400:
+          $ref: '#/components/responses/400_apl'
+        401:
+          $ref: '#/components/responses/401_apl'
+        500:
+          $ref: '#/components/responses/500_apl'
+
+  # Refund endpoints
+  /ordering/order/{order_id}/refunds:
+    post:
+      tags:
+        - Order Refunds
+      summary: Create a Full Refund for an Order
+      description: |-
+        This endpoint makes a full refund for an order
+      security:
+        - BearerAuth: [ ]
+          ApiKeyAuth: [ ]
+      parameters:
+        - name: X-Order-Source
+          in: header
+          description: Order Source to create the refund order
+          required: false
+          schema:
+            type: string
+            items:
+              default: oapi
+              enum:
+                - oapi
+                - connect
+            example: oapi
+        - name: order_id
+          in: path
+          description: ID of the order to be refunded
+          required: true
+          schema:
+            type: integer
+            example: 1234567
+      requestBody:
+        description: Refund reference
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefundRequest'
+        required: true
+      responses:
+        201:
+          $ref: '#/components/responses/create_refund_201'
+        400:
+          $ref: '#/components/responses/create_refund_400'
+        401:
+          $ref: '#/components/responses/create_refund_401'
+        404:
+          $ref: '#/components/responses/create_refund_404'
+        422:
+          $ref: '#/components/responses/create_refund_422'
+        500:
+          $ref: '#/components/responses/create_refund_500'
+  /ordering/order/{order_id}:
+    get:
+      tags:
+        - Order Refunds
+      summary: Get an Order by ID
+      description: |-
+        This endpoint returns order related details by ID.
+      security:
+        - BearerAuth: [ ]
+          ApiKeyAuth: [ ]
+      parameters:
+        - in: path
+          name: order_id
+          description: ID of the order you want data for
+          required: true
+          schema:
+            type: integer
+            example: 1234567
+      responses:
+        200:
+          $ref: '#/components/responses/get_refund_200'
+        400:
+          $ref: '#/components/responses/get_refund_400'
+        401:
+          $ref: '#/components/responses/get_refund_401'
+        404:
+          $ref: '#/components/responses/get_refund_404'
+        500:
+          $ref: '#/components/responses/get_refund_500'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+  parameters:
+    sku:
+      #TODO: this element should be reviewed on PLAT-681, and remove this comment from PLAT-680
+      name: sku
+      in: query
+      description: Filters item by sku (with 1 result)
+      required: false
+      style: form
+      explode: true
+      schema:
+        type: string
+    external_ids:
+      #TODO: this element should be reviewed on PLAT-681, and remove this comment from PLAT-680
+      name: barcode
+      in: query
+      description: Filters item by barcode(with 1 result).  This query was previously called "external_id", which is still supported.
+      required: false
+      style: form
+      explode: true
+      schema:
+        type: string
+    ids:
+      name: ids
+      in: query
+      description: String with a list of comma-separated values that represent item ids. <b>Only available in v2</b>.
+      required: false
+      style: form
+      explode: true
+      allowEmptyValue: false
+      schema:
+        example: "100,200,300,101"
+        type: string
+    Item_id:
+      name: item_id
+      in: path
+      description: ID of the item
+      required: true
+      style: simple
+      explode: false
+      schema:
+        minimum: 1
+        type: integer
+        format: int64
+    Vendor_id:
+      name: vendor_id
+      in: path
+      description: Connect's vendor identifier inside for a given vendor (revenue center)
+      required: true
+      style: simple
+      explode: false
+      schema:
+        minimum: 1
+        type: integer
+        format: int64
+        example: 68040
+    Venue_id:
+      name: venue_id
+      in: path
+      description: Identifier for a given venue (revenue center)
+      required: true
+      style: simple
+      explode: false
+      schema:
+        minimum: 1
+        type: integer
+        format: int64
+        example: 2371
+    CartRequestHeaderContentType:
+      name: "Content-Type"
+      in: header
+      description: |-
+        Two versions are available:
+          - **Version 1**: supports taxes, fees, reductions and modifiers.
+          - **Version 2**: supports taxes, fees, reductions and nested modifiers.
+        > By default if you do not send any value it will be understood that you are using *Version 1*.
+      required: true
+      allowEmptyValue: true
+      explode: false
+      examples:
+        application/com.appetize.oapi.cart.v2+json:
+          value: "application/com.appetize.oapi.cart.v2+json"
+        application/com.appetize.oapi.cart.v1+json:
+          value: "application/com.appetize.oapi.cart.v1+json"
+      schema:
+        type: string
+        enum:
+          - "application/com.appetize.oapi.cart.v2+json"
+          - "application/com.appetize.oapi.cart.v1+json"
+    Corporate_id:
+      name: corporate_id
+      in: path
+      description: Identifier for a given corporate
+      required: true
+      style: simple
+      explode: false
+      schema:
+        minimum: 1
+        type: integer
+        format: int64
+        example: 2371
+    ItemV2RequestAcceptHeader:
+      name: Accept
+      in: header
+      description: Accept header specifies the version of the API to use, **application/com.appetize.oapi.item.v2+json** will make the endpoint response include items with nested modifiers instead of simple items. *If this header is not provided the system assumes* ***application/com.appetize.oapi.item.v1+json***
+      required: false
+      examples:
+        oapi.item.v2+json:
+          value: "application/com.appetize.oapi.item.v2+json"
+        oapi.item.v1+json:
+          value: "application/com.appetize.oapi.item.v1+json"
+      schema:
+        type: string
+        enum:
+          - "application/com.appetize.oapi.item.v2+json"
+          - "application/com.appetize.oapi.item.v1+json"
+    MenuV2RequestAcceptHeader:
+      name: Accept
+      in: header
+      description: Accept header set to **application/com.appetize.oapi.menu.v2+json**, will make the Menu endpoint response include items with nested modifiers instead of simple items.
+      required: false
+      examples:
+        oapi.menu.v2+json:
+          value: "application/com.appetize.oapi.menu.v2+json"
+        oapi.menu.v1+json:
+          value: "application/com.appetize.oapi.menu.v1+json"
+      schema:
+        type: string
+        enum:
+          - "application/com.appetize.oapi.menu.v2+json"
+          - "application/com.appetize.oapi.menu.v1+json"
+  schemas:
+    GetFeesResponse:
+      title: Get Fees Response
+      type: object
+      description: "Documentation Forthcoming"
+      properties:
+        fees:
+          type: array
+          items:
+            $ref: '#/components/schemas/Fee'
+    AppliedFee:
+      title: Applied Fee
+      type: object
+      description: All Fee information after applying to a cart
+      properties:
+        id:
+          type: string
+          example: 2935
+          description: "Identifier given to fee upon creation in Connect"
+        name:
+          type: string
+          example: Service fee 10%
+          description: "Fee Name made upon creation of fee. Updatable, non-unique"
+        hash:
+          type: string
+          example: 54550fa18058847cf0a70cb93ebe9383
+          description: Generated used to identify this Fee
+        fee_type:
+          type: string
+          enum:
+            - PERCENT
+            - FLAT
+            - CUSTOM
+          example: FLAT
+          description: "Fee Type used to calculate value"
+        fee_basis:
+          type: number
+          format: float
+          example: 0.05
+          description: "Integer used as a basis for calculation,If a fee is 5%, the fee_basis will be 0.05. If it is $2.00, the fee_basis will be 2.00"
+        calculated_value:
+          type: number
+          format: float
+          example: 10.61
+          description: "Value of the fee. If the fee is an amount, it will be the same as the fee_basis. If it is a percentage, it will be the fee_basis multiplied by the amount to which the fee is applied."
+        taxable:
+          type: boolean
+          example: true
+          description: "Value set in Connect to enable/disable taxable. Fees that are taxable will be included in the total used to calculate taxes. Non-taxable fees are not included."
+        taxes:
+          type: array
+          items:
+            $ref: '#/components/schemas/Taxes'
+        auto_apply:
+          type: boolean
+          example: true
+          description: "Value set in Connect to enable/disable auto apply. Fees set to auto-apply are automatically applied to every transaction for the vendor to which they're assigned. Fees without auto-apply are manually applied."
+        apply_before_discount:
+          type: boolean
+          example: true
+          description: "Applies to net or gross"
+        fee_class:
+          type: string
+          enum:
+            - GRATUITY
+            - SERVICE_CHARGE
+            - FEE
+            - TIP
+          example: GRATUITY
+          description: "Fee Class field in Connect. Can be fee, gratuity, service charge, or tip."
+        fee_level:
+          type: string
+          enum:
+            - ORDER
+            - ITEM
+          example: ORDER
+          description: "Item or order level"
+        print_tips:
+          type: boolean
+          example: true
+          description: This value will cause the tips to be displayed or not
+        print_suggested_tip_amount:
+          type: boolean
+          example: true
+          description: This value will cause the suggested tips to be shown on the receipt
+        removal_requires_approval:
+          type: boolean
+          example: false
+          description: "Flag from Connect. When enabled, removing the fee from a transaction requires approval from a manager-level account"
+        external_id:
+          type: string
+          example: 2233
+          description: "External Identifier used by external integrations"
+        exclusive_tax_total:
+          type: number
+          format: float
+          example: 0.25
+          description: The total tax eclusive applied
+        inclusive_tax_total:
+          type: number
+          format: float
+          example: 0.10
+          description: The total tax inclusive applied
+        is_available_for_refund:
+          type: boolean
+          example: true
+          description: "Determines whether or not the fee can be refunded."
+        is_item_level:
+          type: boolean
+          example: false
+          description: Determines if the fee was applied at the item level
+        print_on_reciept:
+          type: boolean
+          example: true
+          description: If enabled, this fee will be printed on the receipt.
+        purchase_order_id:
+          type: string
+          example: "1000554212"
+          description: Identifier associated with the purchase
+        receipted:
+          type: boolean
+          example: true
+          description: If enabled the value is assumed to be receipted
+        refunding:
+          type: boolean
+          example: false
+          description: If the fee is part of a refund the value will be true
+        stage:
+          type: string
+          example: "default"
+          description: Stage name for this Fee
+        tax_examt:
+          type: boolean
+          example: false
+          description: "If enabled, makes the fee tax exempt"
+        uid:
+          type: string
+          example: "a2082bd8-73bb-43b3-a152-54554d9c37f2"
+          description: Unique identifier generated to differentiate this fee in the order
+
+    Fee:
+      title: Fee
+      type: object
+      description: "All information around fee objects."
+      properties:
+        id:
+          type: string
+          description: "Identifier given to fee upon creation in Connect"
+          example: "124"
+        name:
+          type: string
+          description: "Fee name provided to connect at the time of creation, Updatable, non-unique"
+          example: "Delivery fee"
+        hash:
+          type: string
+          description: "Unique hash identifier generated by connect"
+          example: "3f865b40d56d634a5d85bdacaee1413d"
+        fee_basis:
+          type: number
+          format: float
+          description: "Value used as a basis for calculation. If a fee is 5%, the fee_basis will be 0.05. If it is $2.00, the fee_basis will be 2.00"
+          example: "2.00"
+        taxable:
+          type: boolean
+          description: "Indicates if fee is taxable or not. Value set in Connect to enable/disable taxable. Fees that are taxable will be included in the total used to calculate taxes. Non-taxable fees are not included."
+          example: true
+        taxes:
+          type: array
+          items:
+            $ref: '#/components/schemas/MenuItemTax'
+        auto_apply:
+          type: boolean
+          description: "Value set in Connect to enable/disable auto apply. Fees set to auto-apply are automatically applied to every transaction for the vendor to which they're assigned. Fees without auto-apply are manually applied."
+          example: false
+        apply_before_discount:
+          type: boolean
+          description: "Applies to net or gross"
+          example: false
+        fee_class:
+          type: string
+          description: "Fee Class field in Connect. Can be fee, gratuity, service charge, or tip."
+          example: "Fee"
+        fee_level:
+          type: string
+          description: "Item or order level"
+          example: "item"
+        print_tips:
+          type: boolean
+          description: "whether the device should print the tip amount on the receipt or not if the fee is of type tip"
+          example: false
+        print_suggested_tip_amount:
+          type: boolean
+          description: "whether the device should print the suggested tip amount on the receipt or not if the fee is of type tip"
+          example: false
+        removal_requires_approval:
+          type: boolean
+          description: "Flag from Connect. When enabled, removing the fee from a transaction requires approval from a manager-level account"
+          example: false
+        external_id:
+          type: string
+          description: "External identifier provided to Connect at creation"
+          example: "1245"
+        exclusive_tax_total:
+          type: number
+          description: "deprecated, will be removed in a future version"
+          format: float
+          example: 0
+        inclusive_tax_total:
+          type: number
+          format: float
+          description: "deprecated, will be removed in a future version"
+          example: 0.0
+        is_available_for_refund:
+          type: boolean
+          description: "Determines whether or not the fee can be refunded."
+          example: false
+        is_item_level:
+          type: boolean
+          description: "Determines whether or not it is item level fee. this will be true if fee_level is item"
+          example: true
+        print_on_reciept:
+          type: boolean
+          description: "deprecated, will be removed in a future version"
+          example: false
+        purchase_order_id:
+          type: string
+          description: "deprecated, will be removed in a future version"
+          example: "0"
+        receipted:
+          type: boolean
+          description: "deprecated, will be removed in a future version"
+        refunding:
+          type: boolean
+          description: "deprecated, will be removed in a future version"
+        stage:
+          type: string
+          description: "deprecated, will be removed in a future version"
+        tax_examt:
+          type: boolean
+          description: "deprecated, will be removed in a future version"
+        uid:
+          type: string
+          description: "deprecated, will be removed in a future version"
+    AlcoholRuleSet:
+      title: Alcohol Rule Set
+      type: object
+      properties:
+        limit_per_order:
+          type: integer
+          description: "Limit set in Connect for how many alcoholic items (determined by isAlcohol flag on the item) can be purchased in a single order."
+        per_order_limit_reached_error_message:
+          type: string
+          description: "Error message for when the maximum number of alcoholic items has been added to an order. Comes up when further alcoholic items are attempted to be added to the order."
+        restriction_error_message:
+          type: string
+          description: "Alert message that should be displayed when a customer adds an alcoholic item to their cart"
+        limit_per_order_enabled:
+          type: boolean
+          description: "Indicates if the vendor has the limit per order feature enabled or disabled"
+    AppliedDiscount:
+      title: Applied Discount
+      type: object
+      description: "A discount whose requisite and reward criteria have been met that is then applied to a cart, or items within a cart."
+      properties:
+        amount_reduced_by:
+          type: number
+          example: 25.00
+          description: "Raw discount basis. If a discount is $25 off, the number is 25. If Discount is 25% off, the number will be 25. This is downstream and mapped to percent off or amount off inside of checkout."
+        calculated_value:
+          type: number
+          example: -15.99
+          description: "The value of a discount that is applied."
+        quantity:
+          type: number
+          example: 2
+          description: "The number of items being discounted"
+        cart_level:
+          type: boolean
+          example: false
+          description: "Determines whether the discount is applied to the subtotal of the transaction or to a subset of items within the cart. If true, applied to the transaction / if false, applied to a subset of items."
+        display_in_cart:
+          type: boolean
+          example: true
+          description: For UI purposes, to decide when to show or not the discount on the cart receipt.
+        external_reference:
+          $ref: '#/components/schemas/CartDiscount_external_reference'
+        id:
+          type: string
+          example: "1000658"
+          description: "Appetize's internal reduction id. For internal use only. Created by Connect when discount is created."
+        name:
+          type: string
+          example: Buy one get one free
+          description: "Appetize's name of the reduction in Connect."
+        promo_code:
+          type: string
+          example: BLACKFRIYAY
+          description: Code that was used for this discount as a requisite.
+        reduction_computation:
+          $ref: '#/components/schemas/CartDiscount_reduction_computation'
+        reference_id:
+          type: string
+          example: "121207"
+          description: "From the Reference ID field in Connect."
+        removal_allowed:
+          type: boolean
+          example: true
+          description: "Internal use only. If true, allows removal of the discount during a transaction."
+        short_description:
+          type: string
+          example: discount for buying one to get one free
+          description: "Field populated through configuring the discount details field in Connect."
+        tags:
+          type: array
+          items:
+            type: string
+            example: percentDiscount
+          description: "Price of an item multiplied by quantity after deductions were calculated."
+        bundle_uuid:
+          type: string
+          example: 71d0c11e-54ce-4e56-90af-86592c04e879
+          description: "Used by Connect to mark a discounted item as part of a bundle."
+    Attribute:
+      title: Venue Attribute
+      description: Assigned attribute to the venue in the venues section for Corporate Connect
+      type: object
+      properties:
+        name:
+          type: string
+          description: name assigned to the attribute in the attributes connect section
+          example: "Test attribute"
+        entity_type:
+          type: string
+          description: Attribute type
+          example: "venue"
+        value:
+          type: string
+          description: associated value for attribute
+          example: "some value"
+    AuthResponse:
+      title: Auth Response
+      required:
+        - authToken
+      type: object
+      description: "Payload: Success: Returns a token. This token is needed to make all subsequent calls to the service. Failure: Any other response. This token should be passed as a bearer token for subsequent http/s requests."
+      properties:
+        auth_key:
+          type: string
+          description: "Auth key token returned upon successful authentication."
+      example:
+        auth_key: some jwt encoded auth key here
+    AuthenticationBearerFailure:
+      title: Authentication Failure From Bearer
+      required:
+        - message
+      type: object
+      description: "Response due to authentication failure from an invalid bearer token."
+      properties:
+        Code:
+          type: integer
+          default: 401
+        message:
+          type: string
+          description: "Contains the returned message from the service after a failure"
+          example: "failed parsing claims: signature is invalid"
+    AuthenticationXAPIFailure:
+      title: Authentication Failure From X-API-Key
+      required:
+        - message
+      type: object
+      description: "Response due to authentication failure from an invalid X-API-KEY header."
+      properties:
+        message:
+          type: string
+          description: "Contains the returned message from the service after a failure"
+      example:
+        message: "api key could not be found or is inactive"
+    BsonID:
+      title: Bson ID
+      type: string
+      format: bson.id
+      example: 507f191e810c19729de860ea
+      description: "Document Id related to a database object. Only used by internal DBs. Unique ID"
+    ItemID:
+      title: Item ID
+      type: number
+      example: 98
+      description: "Identifier given to an item upon creation in Connect"
+    CalculateCartRequest:
+      title: Calculate Cart Request
+      type: object
+      additionalProperties: false
+      description: Include cart items, associated payments, and the user with all discount codes that can be applied.
+      properties:
+        cart:
+          $ref: '#/components/schemas/CartRequest'
+        user:
+          $ref: '#/components/schemas/CartUserRequest'
+      required:
+        - cart
+    CalculateCartWithModifiersRequest:
+      title: Calculate Cart With Modifiers Request
+      type: object
+      additionalProperties: false
+      description: Include cart items, associated payments, and the user with all discount codes that can be applied, also we can add use item modifiers and nested modifiers.
+      properties:
+        cart:
+          $ref: '#/components/schemas/CartWithModifiersRequest'
+        user:
+          $ref: '#/components/schemas/CartUserRequest'
+      required:
+        - cart
+    CalculateCartResponse:
+      title: Calculate Cart Response
+      type: object
+      description: |-
+        This response includes everything that was applied to the cart,
+        there are different options that can be active or not depending on your environment,
+        > this response is immutable, it should not be manipulated and if you make any change manually it will not work as expected.
+      additionalProperties: false
+      properties:
+        signed_cart:
+          $ref: '#/components/schemas/SignedCart'
+    CalculateCartWithModifiersResponse:
+      title: Calculate Cart With Modifiers Response
+      type: object
+      description: |-
+        This response includes everything that was applied to the cart,
+        there are different options that can be active or not depending on your environment,
+        > this response is immutable, it should not be manipulated and if you make any change manually it will not work as expected.
+      additionalProperties: false
+      properties:
+        signed_cart:
+          $ref: '#/components/schemas/SignedCartWithModifiers'
+    CartOrderType:
+      type: string
+      example: POS
+      description: Type of order based on the origin of the request.
+      enum:
+        - POS
+        - MOBILE
+        - CONNECT
+    CartRequest:
+      title: Cart Request
+      type: object
+      additionalProperties: false
+      description: |-
+        Contains everything related to an order, such as items, payments.
+        > Some fields will be overwritten with the values provided by `Connect Product API` such as item cost or categories, but you must send all the necessary fields.
+      properties:
+        tip_status_closed:
+          type: boolean
+          example: true
+          description: Sets closed status for a tip. This will be moved to the Checkout Request in the future.
+        device_order_id:
+          type: string
+          example: A1151999920042015380002
+          description: |-
+            Order Identifier used to summarize a transaction.
+            - Does not have to be unique.
+            - Used identify a transaction in connect.
+        order_type:
+          $ref: '#/components/schemas/CartOrderType'
+        seat_id:
+          type: string
+          description: Seat Identifier is optional.
+          example: 456
+        visitor_id:
+          type: string
+          description: Visitor Identifier is optional.
+          example: 899
+        pickup_time:
+          type: string
+          format: ISO8601/RFC3339
+          example: "2021-01-14T07:26:38-08:00"
+          description: |-
+            Timestamp in `ISO8601/RFC3339` format; allows ordering ahead even when vendor is closed.
+            > This will be moved to the `Checkout` Request in the future.
+        cart_items:
+          type: array
+          uniqueItems: false
+          minItems: 1
+          description: All items for this order should be placed here.
+          items:
+            $ref: '#/components/schemas/CartItemRequest'
+        check:
+          $ref: '#/components/schemas/Check'
+        customer:
+          $ref: '#/components/schemas/Customer'
+        payments:
+          type: array
+          uniqueItems: true
+          minItems: 1
+          description: Payments associated to this order.
+          items:
+            $ref: '#/components/schemas/Payment'
+      required:
+        - cart_items
+        - payments
+    CartResponse:
+      title: Cart
+      type: object
+      description: "Data object in which all item and calculation information for a given transaction is contained."
+      properties:
+        tip_status_closed:
+          type: boolean
+          example: true
+          description: Sets closed status for a tip. This will be moved to the Checkout Request in the future.
+        device_order_id:
+          type: string
+          example: A1151999920042015380002
+          description: |-
+            Order Identifier used to summarize a transaction.
+            - Does not have to be unique.
+            - Used identify a transaction in connect.
+        device_order_time:
+          type: string
+          format: ISO8601/RFC3339
+          example: "2021-01-14T07:26:38-08:00"
+          description: Timestamp in `ISO8601/RFC3339` format; used to know when exactly this request was placed.
+        order_type:
+          $ref: '#/components/schemas/CartOrderType'
+        seat_id:
+          type: string
+          description: Seat Identifier is optional.
+          example: 456
+        visitor_id:
+          type: string
+          description: Visitor Identifier is optional.
+          example: 899
+        device_order_uuid:
+          type: string
+          format: uuid.V4
+          example: 3487829f-8a89-4ea8-9585-9e37d72e9091
+          description: Universally Unique Order Descriptor, generated by OAPI as part of Calculate.
+        pickup_time:
+          type: string
+          format: ISO8601/RFC3339
+          example: "2021-01-14T07:26:38-08:00"
+          description: |-
+            Timestamp in `ISO8601/RFC3339` format; allows ordering ahead even when vendor is closed.
+            > This will be moved to the `Checkout` Request in the future.
+        cart_items:
+          type: array
+          uniqueItems: false
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/CartItem'
+        calculated_cart_sum:
+          type: array
+          description: "A client-supplied array of the expected monetary values for the cart that is only used when the active configuration has Validate Cart Totals as true (Default is false).  If the sum of supplied Total values for the array of calculated cart sums differs from what OAPI validates, the request is rejected."
+          items:
+            $ref: '#/components/schemas/CartLine'
+        check:
+          $ref: '#/components/schemas/Check'
+        customer:
+          $ref: '#/components/schemas/Customer'
+        location:
+          $ref: '#/components/schemas/Location'
+        discounts:
+          type: array
+          items:
+            $ref: '#/components/schemas/AppliedDiscount'
+        fees:
+          type: array
+          items:
+            $ref: '#/components/schemas/AppliedFee'
+        payments:
+          type: array
+          uniqueItems: true
+          minItems: 1
+          description: Payments associated to this order.
+          items:
+            $ref: '#/components/schemas/Payment'
+        subtotal:
+          type: number
+          description: |-
+            Cost of Items, Including Inclusive Taxes, reduced by overall amount by item level reductions.
+            > Deprecated: you should use `cart_totals` instead
+          example: 83.74
+          deprecated: true
+        cart_totals:
+          $ref: '#/components/schemas/CartTotals'
+    CartWithModifiersRequest:
+      title: Cart With Modifiers Request
+      type: object
+      additionalProperties: false
+      description: "Data object in which all item and calculation information for a given transaction is contained. This is used for carts where nested modifiers are present."
+      properties:
+        tip_status_closed:
+          type: boolean
+          example: true
+          description: Sets closed status for a tip. This will be moved to the Checkout Request in the future.
+        device_order_id:
+          type: string
+          example: A1151999920042015380002
+          description: |-
+            Order Identifier used to summarize a transaction.
+            - Does not have to be unique.
+            - Used identify a transaction in connect.
+        order_type:
+          $ref: '#/components/schemas/CartOrderType'
+        seat_id:
+          type: string
+          description: Seat Identifier is optional.
+          example: 456
+        visitor_id:
+          type: string
+          description: Visitor Identifier is optional.
+          example: 899
+        pickup_time:
+          type: string
+          format: ISO8601/RFC3339
+          example: "2021-01-14T07:26:38-08:00"
+          description: |-
+            Timestamp in `ISO8601/RFC3339` format; allows ordering ahead even when vendor is closed.
+            > This will be moved to the `Checkout` Request in the future.
+        external_metadata:
+          type: string
+          description: Additional data to be stored, so client can track information for which Appetize doesn't have a dedicated field.
+        rounding:
+          $ref: '#/components/schemas/CheckoutRounding'
+        cart_items:
+          title: Cart Items
+          type: array
+          uniqueItems: false
+          minItems: 1
+          items:
+            oneOf:
+              - $ref: '#/components/schemas/CartItemWrappedWithRootMapNodeRequest'
+              - $ref: '#/components/schemas/CartItemWrappedWithOriginalItemRequest'
+        check:
+          $ref: '#/components/schemas/Check'
+        customer:
+          $ref: '#/components/schemas/Customer'
+        payments:
+          type: array
+          uniqueItems: true
+          minItems: 1
+          description: Payments associated to this order.
+          items:
+            $ref: '#/components/schemas/Payment'
+      required:
+        - cart_items
+        - payments
+    CartWithModifiersResponse:
+      title: Cart With Modifiers Response
+      type: object
+      description: "Data object in which all item and calculation information for a given transaction is     contained. This is used for carts where nested modifiers are present."
+      properties:
+        tip_status_closed:
+          type: boolean
+          example: true
+          description: Sets closed status for a tip. This will be moved to the Checkout Request in the future.
+        device_order_id:
+          type: string
+          example: A1151999920042015380002
+          description: |-
+            Order Identifier used to summarize a transaction.
+            - Does not have to be unique.
+            - Used identify a transaction in connect.
+        device_order_time:
+          type: string
+          format: ISO8601/RFC3339
+          example: "2021-01-14T07:26:38-08:00"
+          description: Timestamp in `ISO8601/RFC3339` format; used to know when exactly this request was placed.
+        order_type:
+          $ref: '#/components/schemas/CartOrderType'
+        seat_id:
+          type: string
+          description: Seat Identifier is optional.
+          example: 456
+        visitor_id:
+          type: string
+          description: Visitor Identifier is optional.
+          example: 899
+        device_order_uuid:
+          type: string
+          format: uuid.V4
+          example: 3487829f-8a89-4ea8-9585-9e37d72e9091
+          description: Universally Unique Order Descriptor, generated by OAPI as part of Calculate.
+        pickup_time:
+          type: string
+          format: ISO8601/RFC3339
+          example: "2021-01-14T07:26:38-08:00"
+          description: |-
+            Timestamp in `ISO8601/RFC3339` format; allows ordering ahead even when vendor is closed.
+            > This will be moved to the `Checkout` Request in the future.
+        rounding:
+          $ref: '#/components/schemas/CheckoutRounding'
+        cart_items:
+          title: Cart Items
+          type: array
+          uniqueItems: false
+          minItems: 1
+          items:
+            oneOf:
+              - $ref: '#/components/schemas/CartItemWrappedWithRootMapNode'
+              - $ref: '#/components/schemas/CartItemWrappedWithOriginalItem'
+        calculated_cart_sum:
+          type: array
+          description: "A client-supplied array of the expected monetary values for the cart that is only used when the active configuration has Validate Cart Totals as true (Default is false).  If the sum of supplied Total values for the array of calculated cart sums differs from what OAPI validates, the request is rejected."
+          items:
+            $ref: '#/components/schemas/CartLine'
+        check:
+          $ref: '#/components/schemas/Check'
+        customer:
+          $ref: '#/components/schemas/Customer'
+        location:
+          $ref: '#/components/schemas/Location'
+        discounts:
+          type: array
+          items:
+            $ref: '#/components/schemas/AppliedDiscount'
+        fees:
+          type: array
+          items:
+            $ref: '#/components/schemas/AppliedFee'
+        payments:
+          type: array
+          uniqueItems: true
+          minItems: 1
+          description: Payments associated to this order.
+          items:
+            $ref: '#/components/schemas/Payment'
+        subtotal:
+          type: number
+          description: |-
+            Cost of Items, Including Inclusive Taxes, reduced by overall amount by item level reductions.
+            > Deprecated: you should use `cart_totals` instead
+          example: 83.74
+          deprecated: true
+        cart_totals:
+          $ref: '#/components/schemas/CartTotals'
+    CartTotals:
+      title: Cart Totals
+      description: Cumulative amounts totaled for functions within calculate.
+      type: object
+      properties:
+        discounts_total:
+          type: number
+          format: float
+          example: -15.00
+          description: contains all the discounts for items accumulated, that value is always represented as a negative value.
+        fees_total:
+          type: number
+          format: float
+          example: 2.50
+          description: contains all the fees for items  accumulated.
+        exclusive_tax:
+          type: number
+          format: float
+          example: 1.25
+          description: contains all exclusive taxes for items and mods accumulated.
+        inclusive_tax:
+          type: number
+          format: float
+          example: 0
+          description: contains all inclusive taxes for items and mods accumulated.
+        subtotal:
+          type: number
+          format: float
+          example: 79.99
+          description: Cost of Items and Modifiers, Including Inclusive Taxes, reduced by overall amount by item level reductions.
+        original_total:
+          type: number
+          format: float
+          description: Original cost of Items and Modifiers without applied taxes, discounts or any other price modification.
+          example: 94.99
+        total:
+          type: number
+          format: float
+          example: 83.74
+          description: Subtotal, reduced by cart level reductions, plus Exclusive Taxes, Plus Fees.
+    CartItemRequest:
+      title: Cart Item Request
+      required:
+        - cost
+        - id
+        - name
+        - quantity
+      type: object
+      description: All information for an item within a cart. used in `Calculate` Request
+      properties:
+        id:
+          type: string
+          example: "12691"
+          description: "Identifier given to an item upon creation in Connect"
+        quantity:
+          type: number
+          example: 1
+          description: "Quantity of units of an identical cart item. Items with different modifiers will be separate quantities."
+        cost:
+          type: number
+          example: 6.63
+          description: "Price of a single unit of an item id including modifiers that are included or increase parent price. Does not include mods that add price to order. Assigned in Connect."
+        notes:
+          type: string
+          example: "very spicy"
+          description: "Additional notes added in Connect"
+        name:
+          type: string
+          example: "Cheeseburger"
+          description: "Item name in Connect"
+        sku:
+          type: string
+          example: "7782-9300-9282"
+          description: "SKU Number in Connect"
+        tare_weight:
+          example: 1
+          type: number
+          description: "Associated with Tare Weight field in Connect. This is the weight associated with any non-chargable sundries required for sanitation, etc. when measuring the weight of an item."
+        menu_groups:
+          type: array
+          items:
+            $ref: '#/components/schemas/CartItemMenuGroup'
+        modifiers:
+          type: array
+          items:
+            $ref: '#/components/schemas/CartItemModifier'
+        categories:
+          type: array
+          items:
+            $ref: '#/components/schemas/CartItemCategory'
+    CartItem:
+      title: Cart Item
+      required:
+        - cost
+        - id
+        - name
+        - quantity
+      type: object
+      description: "All information for an item within a cart."
+      properties:
+        id:
+          type: string
+          example: "12691"
+          description: "Identifier given to an item upon creation in Connect"
+        quantity:
+          type: number
+          example: 1
+          description: "Quantity of units of an identical cart item. Items with different modifiers will be separate quantities."
+        cost:
+          type: number
+          example: 30.00
+          description: "Price of a single unit of an item id including modifiers that are included or increase parent price. Does not include mods that add price to order. Assigned in Connect."
+        original_total:
+          type: number
+          example: 39.98
+          description: Original unit cost multiplied by quantity.
+        original_unit_cost:
+          type: number
+          example: 19.99
+          description: Price of a single item before deductions were calculated
+        total:
+          type: number
+          example: 30.00
+          description: Unit cost multiplied by quantity
+        unit_cost:
+          type: number
+          example: 15.00
+          description: Unit cost after application of discounts, if applicable.
+        subvendor_id:
+          type: string
+          description: List of identifiers that represents the sub-vendors assigned to a vendor (venue level). This element is created in connect under the Vendors page. Click on the `Add Sub` button that corresponds to the desired vendor. After the sub-vendor creation, it can be assigned to an existing item under the page Items > Items > Assigned Vendor. If this value is not set in connect the value "0" is returned.
+          example: "5"
+        notes:
+          type: string
+          example: "very spicy"
+          description: "Additional notes added in Connect"
+        name:
+          type: string
+          example: "Cheeseburger"
+          description: "Item name in Connect"
+        sku:
+          type: string
+          example: "7782-9300-9282"
+          description: "SKU Number in Connect"
+        tare_weight:
+          example: 1
+          type: number
+          description: "Associated with Tare Weight field in Connect. This is the weight associated with any non-chargable sundries required for sanitation, etc. when measuring the weight of an item."
+        price_override:
+          type: boolean
+          example: True
+        is_gift_card_item:
+          type: boolean
+          example: True
+          description: Whether or not this item is purchased with a gift card
+        menu_groups:
+          type: array
+          items:
+            $ref: '#/components/schemas/CartItemMenuGroup'
+        modifiers:
+          type: array
+          items:
+            $ref: '#/components/schemas/CartItemModifier'
+        taxes:
+          type: array
+          items:
+            $ref: '#/components/schemas/Taxes'
+        categories:
+          type: array
+          items:
+            $ref: '#/components/schemas/CartItemCategory'
+        discounts:
+          type: array
+          items:
+            $ref: '#/components/schemas/AppliedDiscount'
+    CartItemWrappedWithOriginalItemRequest:
+      title: Cart Item Wrapped With Original Item Request
+      description: This is an extra layer used for polymorphic functionality within the service, this is a request so contains fewer properties.
+      type: object
+      properties:
+        original_cart_item:
+          $ref: '#/components/schemas/CartItemRequest'
+    CartItemWrappedWithOriginalItem:
+      title: Cart Item Wrapped With Original Item
+      description: This is an extra layer used for polymorphic functionality within the service.
+      type: object
+      properties:
+        original_cart_item:
+          $ref: '#/components/schemas/CartItem'
+    CartItemWithModifiersRequest:
+      title: Cart Item With Modifiers Request
+      required:
+        - cost
+        - id
+        - name
+        - quantity
+      type: object
+      description: "Cart item with nested modifiers, this is a request so contains fewer properties."
+      properties:
+        item:
+          $ref: '#/components/schemas/SellableAPIItem'
+        quantity:
+          type: number
+          example: 1.00
+          description: "Quantity of units of an identical cart item. Items with different modifiers will be separated quantities."
+        activity:
+          title: Cart Item Activity
+          type: string
+          description: "A string representing if it is a purchase or a return"
+          example: ACTIVITY_PURCHASE
+          enum:
+            - ACTIVITY_PURCHASE
+            - ACTIVITY_RETURN
+        cart_item_cost:
+          $ref: '#/components/schemas/CartItemCost'
+        menu:
+          type: object
+          description: "Item position and configuration not part of calculation"
+          properties:
+            course_id:
+              type: string
+              description: "ID of \"course\" or \"Delivery Time\" used to group items for fulfillment."
+              example: "41312"
+            is_off_menu:
+              type: boolean
+              description: "Indicates if item selected is no part of a pre-configured menu.  Item must still be available/assigned to vendor catalog and be available for purchase."
+              default: false
+              example: true
+        map_node_items:
+          type: object
+          description: "Contains the flattened map of modifier selections keyed by the modifier's uuid to its cart item data"
+          properties:
+            <uuid>:
+              $ref: '#/components/schemas/MapNodeItem'
+    MapNodeItem:
+      type: object
+      title: Map Node Item
+      description: Contains a single map node item, Used to contain the references to a chosen modifier.
+      properties:
+        item:
+          $ref: '#/components/schemas/Item'
+        quantity:
+          type: number
+          example: 1.00
+        activity:
+          type: string
+          description: "A string representing if it is a purchase or a return"
+          example: ACTIVITY_PURCHASE
+          enum:
+            - ACTIVITY_PURCHASE
+            - ACTIVITY_RETURN
+        cart_item_cost:
+          $ref: '#/components/schemas/CartItemCost'
+    CartItemWithModifiers:
+      title: Cart Item With Modifiers
+      required:
+        - cost
+        - id
+        - name
+        - quantity
+      type: object
+      description: "Cart item with nested modifiers."
+      properties:
+        item:
+          $ref: '#/components/schemas/SellableAPIItem'
+        quantity:
+          type: number
+          example: 1.00
+          description: "Quantity of units of an identical cart item. Items with different modifiers will be separated quantities."
+        activity:
+          title: Cart Item Activity
+          type: string
+          description: "A string representing if it is a purchase or a return"
+          example: ACTIVITY_PURCHASE
+          enum:
+            - ACTIVITY_PURCHASE
+            - ACTIVITY_RETURN
+        cart_item_cost:
+          $ref: '#/components/schemas/CartItemCost'
+        discounts:
+          type: array
+          items:
+            $ref: '#/components/schemas/AppliedDiscount'
+        taxes:
+          type: array
+          items:
+            $ref: '#/components/schemas/Taxes'
+        menu:
+          type: object
+          description: "Item position and configuration not part of calculation"
+          properties:
+            course_id:
+              type: string
+              description: "ID of \"course\" or \"Delivery Time\" used to group items for fulfillment."
+              example: "41312"
+            is_off_menu:
+              type: boolean
+              description: "Indicates if item selected is no part of a pre-configured menu.  Item must still be available/assigned to vendor catalog and be available for purchase."
+              default: false
+              example: true
+        map_node_items:
+          type: object
+          description: "Contains the flattened map of modifier selections keyed by the modifier's uuid to its cart item data"
+          properties:
+            <uuid>:
+              type: object
+              properties:
+                item:
+                  $ref: '#/components/schemas/Item'
+                quantity:
+                  type: number
+                  example: 1.00
+                activity:
+                  type: string
+                  description: "A string representing if it is a purchase or a return"
+                  example: ACTIVITY_PURCHASE
+                  enum:
+                    - ACTIVITY_PURCHASE
+                    - ACTIVITY_RETURN
+                cart_item_cost:
+                  $ref: '#/components/schemas/CartItemCost'
+        map_node_item_computations:
+          type: object
+          description: "Contains the adjusted cost and computation method of each modifier in map_node_items"
+          properties:
+            <uuid>:
+              $ref: "#/components/schemas/CartItemsUsedForModifiersComputation"
+    CartItemWrappedWithRootMapNodeRequest:
+      title: Cart Item Wrapped With RootMapNode Request
+      description: Wrapper used only to contain cart_item_with_root_map_node, it is necessary because protobuf oneof is used and it requires this structur, this is a request so contains fewer properties.
+      type: object
+      properties:
+        cart_item_with_root_map_node:
+          $ref: '#/components/schemas/CartItemWithModifiersRequest'
+    CartItemWrappedWithRootMapNode:
+      title: Cart Item Wrapped With RootMapNode
+      description: Wrapper used only to contain cart_item_with_root_map_node, it is necessary because protobuf oneof is used and it requires this structure.
+      type: object
+      properties:
+        cart_item_with_root_map_node:
+          $ref: '#/components/schemas/CartItemWithModifiers'
+    CartItemsUsedForModifiers:
+      title: Cart Item Used For Modifiers
+      description: Being used to contain SellableItem and anything else needed to identify an item in a cart with modifiers.
+      required:
+        - cost
+        - id
+        - name
+        - quantity
+      type: object
+      properties:
+        item:
+          $ref: '#/components/schemas/SellableItem'
+        quantity:
+          type: number
+          description: "Quantity of units of a given cart item with identical modifiers. Items with different modifiers will be separated quantities."
+          example: 1.00
+        activity:
+          type: string
+          description: "A string representing if it is a purchase or a return"
+          example: ACTIVITY_PURCHASE
+          enum:
+            - ACTIVITY_PURCHASE
+            - ACTIVITY_RETURN
+        cart_item_cost:
+          $ref: '#/components/schemas/CartItemCost'
+        discounts:
+          type: array
+          items:
+            $ref: '#/components/schemas/AppliedDiscount'
+        taxes:
+          type: array
+          items:
+            $ref: '#/components/schemas/Taxes'
+    CartItemsUsedForModifiersComputation:
+      title: Cart Items Used For Modifiers Computation
+      description: Being used to know the value or amount that results from applying a modifier.
+      type: object
+      properties:
+        item:
+          type: object
+          properties:
+            mode:
+              type: string
+              example: "ADD_PRICE_TO_ORDER"
+        price_adjustment:
+          type: number
+          example: "1.39"
+          description: "The amount this item's TotalCost has been increased or decreased in regard to the pricing mode.  If this modifier's pricing mode is Increases or Included, the number will be negative or 0."
+        original_unit_cost:
+          type: number
+          example: 12.49
+          description: the original price of a single unit of this item
+        original_total_cost_per_unit:
+          type: number
+          example: 24.98
+          description: "the total cost of the quantity of this modifier per direct parent item.  If 3 of this item exist per parent item, this value is 3 * original_unit_cost"
+        original_total_cost:
+          type: number
+          example: 49.96
+          description: "total total cost of the modifier for the entire quantity of this cart item.  If 3 of this item exist per parent item, and 2 parent items exist per top level cart item, and the top level cart item has quantity 2, this amount is 2 (top level cart item quantity) * 2 (parent item quantity) * 3 (quantity per parent) * original_unit_cost"
+        adjusted_unit_cost:
+          type: number
+          example: 15.49
+          description: "unit cost after adjusting for pricing modes.  If this item's pricing mode is Increases Parent Price or Included in Parent price, this number will be 0"
+        adjusted_total_cost_per_unit:
+          type: number
+          example: 30.98
+          description: "total cost per parent unit after adjusting for pricing modes. If this item's pricing mode is Increases Parent Price or Included in Parent price, this number will be 0"
+        adjusted_total_cost:
+          type: number
+          example: 61.96
+          description: "total cost of the modifier across the entire quantity of this cart item after adjusting for pricing modes.  If this item's pricing mode is Increases Parent Price or Included in Parent price, this number will be 0"
+        quantity_per_unit:
+          type: number
+          example: 2
+          description: "quantity of this modifier per parent item"
+        total_quantity:
+          type: number
+          example: 12
+          description: "quantity of this modifier for the quantity of the top level cart item"
+    CartItemCost:
+      title: Cart Item Cost
+      description: Object containing all the costs associated with an item
+      type: object
+      properties:
+        original_total:
+          description: "The cost of the original_unit_cost * the quantity of the item"
+          type: number
+          example: "20.00"
+        original_unit_cost:
+          description: "The cost of one quantity of the item. "
+          type: number
+          example: "10.00"
+        total:
+          description: "The cost of unit_cost * quantity of the item. "
+          type: number
+          example: "18.00"
+        unit_cost:
+          description: "The cost of one unit after discounts of the item."
+          type: number
+          example: "9.00"
+        is_open_price:
+          type: boolean
+          description: "Indicates if the pricing is actually manually input by user.  As opposed to being a price selected \"Custom Price Level\". Must be used in conjunction with \"price_overide\" to bypass calculation use of current active price level.  Does not affect price calculation.  Used for reporting purposes."
+          default: false
+          example: false
+        active_price_level:
+          $ref: '#/components/schemas/PriceLevel'
+    Credential:
+      description: Credentials used for PPI discounts
+      properties:
+        card_number:
+          type: string
+          example: "123454678"
+          description: Associated card number for the credential
+        card_pin:
+          type: string
+          example: "1234"
+          description: Associated card pin number
+        card_encryption:
+          type: string
+          example: "cnp"
+          description: Used encryption method
+        name:
+          type: string
+          example: "John Smith"
+          description: User name associated to the card
+        phone:
+          type: string
+          example: "1-888-88457158"
+          description: Associated user's phone number
+        email:
+          type: string
+          example: "some@email.com"
+          description: Associated user's email account
+        room_number:
+          type: string
+          example: "5"
+          description: Associated user's room number
+    Item:
+      #TODO: this element should be reviewed on PLAT-681, and remove this comment from PLAT-680, cause V2 have more fields than V1
+      title: Item
+      description: Contains all the information about an item
+      type: object
+      properties:
+        id:
+          type: string
+          example: "4554"
+          description: "Identifier given to an item upon creation in Connect"
+        name:
+          type: string
+          example: "Fruit Loops"
+          description: Human readable name made in Connect. Updateable, non-unique. This field is set in Connect during the item creation.
+        display_name:
+          type: string
+          example: "Cheese"
+          description: Human readable name made in Connect when setting the modifier.
+        notes:
+          #PLAT-680 This item is not shown in Connect>Items ??
+          type: string
+          description: Field for including various notes about items.
+          example: "Item needs to be applied with milk."
+        sku:
+          type: string
+          description: Maps to SKU (Stock keeping unit) number field in Connect.
+          example: "sku-555"
+        gift_card:
+          #PLAT-680 This item is not shown in Connect>Items ?? We do have type=giftcard
+          type: boolean
+          description: This field represents if the current item is a gift card or not.
+          example: false
+        price_override:
+          type: boolean
+          example: true
+          description: This field shows if the price is overridden at venue/vendor level. Let's suppose that for BigCompany with 3 vendors in only one vendor they want to sell an item, lets say Coca-cola, in a higher rate, the BigCompany administrator can override the Coca-cola price at vendor level.
+        tare_weight:
+          type: number
+          example: "0.55"
+          description: Associated with `Tare Weight` field in Connect. This is the weight associated with any non-chargable sundries required for sanitation, etc. when measuring the weight of an item. In Connect, this field can be found under the item form in the `Secondary section`.
+        discountable:
+          type: boolean
+          example: true
+          description: This field represents if an item is used to satisfy requisites or rewards for cart or item-level discounts. If this value is set to false, the item value will not be eligible to satisfy rewards, so the item cost or the subtotal won't be affected. This field is set in Connect.
+        taxable:
+          type: boolean
+          example: true
+          description: This field represents if the item is applied to taxes calculation. If it is set to true, then the value of the item will be included when calculating taxes. If no, this item won't be used in taxes calculation. This fields doesn't affect the modifiers taxes values by itself.
+        categories:
+          description: This field holds an array elements `Category Items`, that describes all the categories assigned to the item.
+          type: array
+          items:
+            $ref: '#/components/schemas/CartItemCategory'
+        item_attributes:
+          description: This field holds an array elements `Attributes`, that describes all the attributes assigned to the item.
+          type: array
+          items:
+            $ref: '#/components/schemas/ItemAttribute'
+        pos_category_ids:
+          description: This is field is an array of IDs. Every ID represents an identifier that can be used to fetch additional information to be displayed on the Point of Sale (POS).
+          type: array
+          items:
+            $ref: '#/components/schemas/POSCategoryID'
+          example: [ "1","2","3","4" ]
+        upsell_items:
+          type: array
+          description: "List of upsell items.  An upsell item is an extra item that gets offered as a suggestion when selling a product.  They are set in connect."
+          items:
+            $ref: '#/components/schemas/UpsellItem'
+        custom_fields:
+          type: array
+          description: "Documentation Forthcoming"
+          items:
+            $ref: '#/components/schemas/ItemCustomField'
+        external_names:
+          description: This field holds the information about the name existing in a external system used in a special integration case.
+          $ref: "#/components/schemas/ExternalNames"
+        images:
+          description: This field is an array with all the images paths associated to the item.
+          type: array
+          items:
+            $ref: "#/components/schemas/Image"
+        item_availability:
+          description: This field shows whether or not the item is available in given day part(s).
+          $ref: "#/components/schemas/ItemAvailability"
+        original_cost:
+          type: number
+          description: This field represents the active price of the modifier item.
+          example: 1.49
+        show_desc:
+          type: boolean
+          description: This fields is set in Connect under `Items form` in the `Display section`. If this value is set to true the item description is shown in the menu.
+          example: false
+        description:
+          type: string
+          description: This field holds the description to be shown in the menu, only visible if the show_desc field is set as true. This fields is set in Connect under `Items form` in the `Display section`
+          example: "Family size fruit loops with extra sugar"
+        calories:
+          type: string
+          description: Calories number set in Connect under `Items form` in the `Secondary section`. The type of this field is a string but it holds a number. *** This field will be shown in certain items types ***
+          example: "450"
+        calories_label:
+          type: string
+          example: "Kilocalories"
+          description: Label to be applied to the `calories` field in the menu, this item set in Connect under `Items form` in the `Secondary section` *** This field will be shown in certain items types ***
+        type:
+          description: This field holds the information about the type of this item.
+          $ref: "#/components/schemas/ItemType"
+        is_alcohol:
+          type: boolean
+          description: This field shows if the item is an alcohol drink, this value is set in Connect under `Items form` in the `Display section`. *** This field will be shown in certain items types ***
+          example: false
+        sort_order:
+          type: string
+          example: 1
+          description: This fields is string but internally is a number, this field set in  in Connect under `Items form` in the `Display section`. This element is used in the serving orders, for example first the meat then the beverage.
+        is_suite_item:
+          type: boolean
+          example: True
+          description: This field shows if the item is a suite item or not.
+        sold_as_item:
+          type: boolean
+          description: "Indicates item can be sold on its own without parent item."
+          example: true
+        used_as_modifier:
+          type: boolean
+          description: "Indicates if items is a 'modifier' item"
+          example: true
+        print_on_receipt:
+          type: boolean
+          description: "Indicates if item should appear on customer facing screens or receipt"
+          example: false
+        is_suite_package:
+          type: boolean
+          description: "Indicates if item is used as a Suite package item (contains suite items) and is a suite item"
+          example: false
+
+    ItemType:
+      title: Item Type
+      description: This object represents an item type.
+      type: string
+      enum:
+        - "Meal"
+        - "Food"
+        - "Drink"
+        - "Merchandise"
+        - "Bundle"
+        - "Gift"
+        - "Shipping"
+    ItemAvailability:
+      type: object
+      description: This object represents if an item is available at one more day parts.
+      properties:
+        always_available:
+          type: boolean
+          description: This field represents if the item is available or not, true means it is available.
+          example: "true"
+        availability:
+          $ref: "#/components/schemas/Availability"
+    Availability:
+      type: object
+      description: This object represents if an item is available at one more day parts.
+      properties:
+        daypart_ids:
+          type: array
+          description: This field holds an array of strings with that represents the IDs for the daypart that this availability object applies.
+          items:
+            type: string
+          example: [ "5","7" ]
+    ExternalNames:
+      type: object
+      description: This object represents a unique item in third party systems
+      properties:
+        status:
+          type: string
+          example: STATUS_ACTIVE
+          enum:
+            - STATUS_ACTIVE
+        id:
+          type: string
+          example: "cer-1256677"
+        class:
+          type: string
+          example: "cereal"
+    POSCategoryID:
+      title: POS Category ID
+      description: Identifier of a POS Category element, a POS Category registry holds additional information about a category assigned to the point of sale, for example allergies or restrictions like alcohol limit restriction.
+      type: string
+      example: "1"
+    SellableItem:
+      title: Sellable Item
+      description: An item that can be sold. Item is embedded but also has a root map node. It also contains all the possible child selections in map_node_items and map_node_item_computations associated to a modifier
+      type: object
+      properties:
+        item:
+          $ref: '#/components/schemas/Item'
+        root_map_node:
+          $ref: '#/components/schemas/RootMapNode'
+        map_node_items:
+          type: object
+          properties:
+            <uuid>:
+              $ref: '#/components/schemas/SellableItem'
+        map_node_item_computations:
+          type: object
+          description: "Contains the adjusted cost and computation method of each modifier in map_node_items"
+          properties:
+            <uuid>:
+              $ref: "#/components/schemas/CartItemsUsedForModifiersComputation"
+    SellableAPIItem:
+      title: Sellable API Item
+      description: This object represents an item that can be sold and wraps information about the item itself, its modifiers in a tree representation, and all the selected modifiers to apply to the item. The fields for this objects are `Item`, `root_map_node` and `map_node_items`. The field `Item` holds information created in connect with common fields for an Item. The `root_map_node` field holds the full tree of modifiers applicable to this element. Finally `map_node_items` hold the modifiers to be applied to an item in the context of an order (process and checkout endpoints). For additional information in every field please consult the reference in this document.
+      type: object
+      properties:
+        item:
+          $ref: '#/components/schemas/Item'
+        root_map_node:
+          $ref: '#/components/schemas/RootMapNode'
+        map_node_item:
+          $ref: '#/components/schemas/MapNodeItems'
+    Location:
+      title: Location (Vendor)
+      description: The store, station and employee that made the purchase
+      type: object
+      properties:
+        store_id:
+          type: string
+          example: "123"
+          description: The store id where the purchase is made
+        station_id:
+          type: string
+          example: "456"
+          description: The station id where the purchase is made
+        employee_id:
+          type: string
+          example: "789"
+          description: The signed in employee that made the purchase
+    MapNodeItems:
+      type: object
+      title: Map of selected Items in an order
+      description: This map is a key, value object that represents a modifiers selection applicable to an Item in the context of an order. The key is the modifier identifier, and the value is the modifier itself. This object applies to Calculate and Checkout endpoints ***Only available in v2.***
+      properties:
+        <uuid>:
+          $ref: '#/components/schemas/Item'
+    PriceLevel:
+      title: Price Level
+      description: This object represents a selection in the cart for a given item. It contains information about the item cost. Connect determines the appropriate price level to assign for the item when used by Ordering API.
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+            - "STATUS_UNSPECIFIED"
+            - "STATUS_ACTIVE"
+          description: This value represents the current status for the price level.
+        Cost:
+          type: number
+          example: 458.58
+          description: This is field represents the value of the cost for the given price level, this value is stored including decimals (float)
+    CartItemCategory:
+      title: Cart Item Category
+      required:
+        - id
+        - level
+      type: object
+      description: This object represents a category selected for an item, this selection is made by the user in Connect under the form Item > 'Secondary'.
+      properties:
+        id:
+          type: string
+          example: "15876"
+          description: "Identifier assigned to item category in Connect at time of creation."
+        name:
+          type: string
+          example: Food
+          description: "Category Name from Connect"
+        level:
+          type: number
+          example: 1
+          description: The category level in the category hierarchy.
+    CartItemMenuGroup:
+      title: Cart Item Group
+      type: object
+      description: Used to sort the item in the menu.
+      properties:
+        name:
+          type: string
+          example: Beverage
+          description: User readable grouping name.
+        description:
+          type: string
+          example: Shared group for Beverage
+          description: User readable grouping description.
+        rules:
+          type: array
+          items:
+            $ref: '#/components/schemas/CartItemGroup_rules'
+    CartItemGroup:
+      title: Cart Item Group
+      type: object
+      description: "Documentation Forthcoming"
+      properties:
+        name:
+          type: string
+          example: Beverage
+          description: User readable grouping.
+        rules:
+          $ref: '#/components/schemas/CartItemGroup_rules'
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/CartItem'
+    CartItemModifier:
+      title: Cart Item Modifier
+      type: object
+      description: Item that can be added to the main item as a modifier
+      properties:
+        id:
+          type: string
+          example: "34254"
+          description: "Id from Connect"
+        cost:
+          type: number
+          example: 1.59
+          description: "Cost from Connect"
+        quantity:
+          type: number
+          example: 2
+          description: "Quantity from Connect"
+        name:
+          type: string
+          example: Pickle
+          description: "Modifier name from Connect"
+        sku:
+          type: string
+          example: 3452-7468-3457
+          description: "SKU from Connect"
+      required:
+        - id
+        - cost
+        - quantity
+        - name
+    CartItemModifiersItem:
+      title: Cart Item Modifiers Item
+      type: object
+      properties:
+        <uuid>:
+          type: array
+          example: 'asdf9-iuai8d-fas83-asnfia9'
+          description: 'UUID matches a uuid of a map node. The object is the same of a cart item'
+          items:
+            $ref: '#/components/schemas/SellableItem'
+    CartItemGroup_rules:
+      title: Cart Item Group Rules
+      type: object
+      properties:
+        required:
+          type: number
+          example: 0
+          description: boolean true false represented by integer.
+        maximum:
+          type: number
+          example: 3
+          description: max item limit for group.
+    CartDiscount_external_reference:
+      title: Cart Discount External Reference
+      type: object
+      description: "Reference to an external system"
+      properties:
+        name:
+          example: "HAPPY-HOUR"
+          description: "The external system's name"
+          type: string
+        id:
+          example: 451
+          description: "The external system's id. This is an appetize field."
+          type: string
+        value:
+          example: 10
+          description: "The value in which the external discount overwrote the value of the discount. This is an internal field."
+          type: number
+    CartDiscount_reduction_computation:
+      title: Cart Discount Reduction Computation
+      type: object
+      description: "Describes how the discount was calculated."
+      properties:
+        value:
+          type: number
+          example: -15
+          description: "Value taken off the price of an item."
+        method:
+          type: string
+          example: FINAL_COST
+          description: "How the value taken off the price of an item. FINAL_COST, PERCENT and SUBTOTAL are the current values. For internal reference."
+    CartLine:
+      title: Calculated Cart Sum entry
+      type: object
+      description: "A single client-supplied expectation of what the subtotal of the cart should be.  Review Cart.Subtotal for the definition of subtotal.  The overall expected cart's subtotal can be broken into individual entries for readability and descriptions."
+      properties:
+        title:
+          type: string
+          description: "Client-specified name for this entry.  This is a custom string value that is not validated."
+          example: "expected full cart subtotal"
+        type:
+          type: string
+          description: "Client-specified type for this entry.  This is a custom string value that is not validated"
+          example: "subtotal"
+        value:
+          type: number
+          description: "A portion or complete value of the expected cart subtotal."
+          example: 49.99
+    CheckoutRounding:
+      title: Rounding
+      description: Used to add rounding instructions
+      type: object
+      properties:
+        amount:
+          type: number
+          description: "Is the difference between the cart total and the final amount with the right rounding precision added to it. For example, if you cart total is $1.50 and your precision is 1 (round to the next dollar), your amount should be 0.50"
+          example: 0.79
+        is_round_up_for_charity:
+          type: boolean
+          description: "Defines if rounding for charity."
+        hash:
+          type: string
+          description: "Encrypted rounding congiguration. Hash could be retrivied from vendors endpoint. See GET vendors endpoint for hash information."
+          example: "464f876b9a8990d2c067e9144f8eff6b08ea9e0f4bfb9d4fc9599c43ea289e7b.eyJjcmVhdGVUaW1lIjoxNjIyMjM2NzI0LCJ0dGwiOjAsImRhdGEiOiJ7XCJ0eXBlXCI6XCJST1VORF9VUF9GT1JfQ0hBUklUWV9ET05BVElPTlwiLFwicHJlY2lzaW9uXCI6XCIxXCIsXCJhbGxvd2VkUGF5bWVudFR5cGVzXCI6W1wiQUxMXCJdfSJ9"
+    Check:
+      title: Check
+      type: object
+      description: Used to add additional information to an order.
+      properties:
+        number:
+          type: string
+          example: "1597"
+          description: |-
+            Used to quickly identify a check
+            - Does not have to be unique
+        number_additional_text:
+          type: string
+          example: "Brent"
+          description: |-
+            Additional information to display
+            > Usually is a name
+        guest_count:
+          type: number
+          example: 3
+          description: "Allows us to specify the number of guests at the table"
+    RequestMalformed:
+      title: Checkout Malformed
+      type: object
+      properties:
+        Code:
+          type: integer
+          default: 400
+        message:
+          type: string
+          description: "Contains the returned message from the service after an unexpected request"
+          example: "malformed request syntax"
+    CharityRoundingType:
+      title: Charity Rounding
+      type: object
+      properties:
+        enabled:
+          type: boolean
+          description: "Tells if the rounding is enabled or disabled"
+          example: true
+        precision:
+          type: number
+          description: "Rounding precision"
+          example: 1.50
+        allowed_payment_type:
+          type: string
+          description: "Describes the allowed payment.  Option is set in Connect"
+          example: "ALL"
+        message:
+          type: string
+          description: "Message to display for the type at terminal"
+          example: "Some interesting message"
+        title:
+          type: string
+          description: "Title that displays at the terminal for the type"
+          example: "The title"
+        hash:
+          type: string
+          description: "Verification hash.  Generated from Connect's signing key internally"
+          example: "c455781f50cf33311e3f6e34886267e77f0e5916b65ad254143de531e58a8c9d.eyJjcmVhdGVUaW1lIjoiMTYyNTg2MDUxNyIsInR0bCI6MCwiZGF0YSI6IntcInR5cGVcIjpcIlJPVU5EX1VQX0ZPUl9DSEFSSVRZX0RPTkFUSU9OXCIsXCJwcmVjaXNpb25cIjpcIjEuMDBcIixcImFsbG93ZWRQYXltZW50VHlwZXNcIjpcIlwifSJ9"
+
+    CheckoutRequest:
+      title: Checkout Request
+      type: object
+      description: "Checkout V1 Request without modifiers"
+      properties:
+        send_email_receipt:
+          type: boolean
+          example: true
+          description: "When 'true' is sent for this field, a receipt will be generated and emailed to the address passed in the Customer block"
+        signed_cart:
+          $ref: '#/components/schemas/SignedCart'
+    CheckoutRequestWithModifiers:
+      title: Checkout Request With Modifiers
+      type: object
+      description: "Checkout V2 Request with map node modifiers (signed_cart is not necessary if only device_order_uuid is provided)"
+      properties:
+        signed_cart:
+          $ref: '#/components/schemas/SignedCartWithModifiers'
+        payments:
+          type: array
+          items:
+            $ref: "#/components/schemas/Payment"
+          description: "A payments block for use when using stored cart functionality.  Payments can be passed in both on this field as well as SignedCart.Payments, but if this field is populated, it will be preferred over SignedCart.Payments"
+        device_order_uuid:
+          type: string
+          format: uuid
+          example: "84cd9786-2825-4fbe-94d7-0bfd37e8761e"
+          description: "the device order UUID returned as part of CalculateCart's Signed Cart.  Supplying this field, along with the sibling payments block, will allow the client to skip passing in the entirety of the signed cart."
+        send_email_receipt:
+          type: boolean
+          example: true
+          description: "When 'true' is sent for this field, a receipt will be generated and emailed to the address passed in the Customer block"
+    CheckoutResponse:
+      title: Checkout Response
+      type: object
+      description: "This is the response after sending a checkout request"
+      properties:
+        order_id:
+          type: integer
+          example: 12345
+          description: "This is the order id of the checkout in connect"
+    Customer:
+      title: Customer
+      type: object
+      properties:
+        external_id:
+          type: string
+          example: patsmith
+          description: Customer external identifier passed to checkout and then to connect.
+        first_name:
+          type: string
+          example: Pat
+          description: First Name
+        last_name:
+          type: string
+          example: Smith
+          description: Last Name
+        email:
+          type: string
+          example: patsmith@example.com
+          description: Email in lowercase
+        address1:
+          type: string
+          example: 123 Happy Lane
+          description: Main Address
+        address2:
+          type: string
+          example: Apt 7
+          description: Alternative Address
+        city:
+          type: string
+          example: Darling Heights
+          description: City
+        postal_code:
+          type: string
+          example: 90163
+          description: Postal Code Number
+          maxLength: 5
+          minLength: 5
+          pattern: ([0-9]{5})
+        state:
+          type: string
+          example: CA
+          maxLength: 2
+          minLength: 2
+          pattern: ([A-Z]{2})
+          description: State in `Postal Code` format, two letters in upper case.
+        notes:
+          type: string
+          example: Sample notes
+          description: Notes included by the customer
+        phone_number:
+          type: string
+          description: 10 digits customer's phone number. Customers can receive order updates through text messages.
+          example: 8881112233
+          pattern: ([1-9][0-9]{9})
+      required:
+        - first_name
+        - last_name
+        - email
+        - address1
+        - state
+    CustomFee:
+      title: Custom Fee
+      type: object
+      description: |-
+        Custom Fees that can be applied to a cart.
+        When interacting with Custom Fees via Ordering API it is mandatory to have `Default mobile ordering account` defined in Connect and pointing to a valid Terminal account.
+        If this field is not set then custom fees are not going to be applied even if `Calculate Fees` flag is enabled.
+      properties:
+        id:
+          type: string
+          description: "Fee Identifier from Connect"
+        name:
+          type: string
+          description: "Fee Name from Connect"
+        hash:
+          type: string
+          description: "Fee hash"
+        type:
+          type: integer
+          description: "Type of fee. FEE_TYPE_UNASSIGNED = 0 (represent a non assigned fee); FEE_TYPE_PERCENT = 1 (will make the fee be charged as a percentage); FEE_TYPE_FLAT = 2 (will make the fee a flat amount); FEE_TYPE_CUSTOM = 3; (Accounts for a manual flat fee)"
+        value:
+          type: number
+          description: "Fee value is a number that can represent amount or percentage based on type"
+        apply_before_discount:
+          type: boolean
+          description: "Applies fee to net or gross"
+        auto_apply:
+          type: boolean
+          description: "From Connect. Sets fee to be automatically applied."
+        is_taxable:
+          type: boolean
+          description: "Value from Connect, indicating whether fee is taxable or not."
+        class:
+          type: string
+          description: "Indicates whether this is a standard fee, a gratuity charge or something else"
+        vendor_id:
+          type: string
+          description: "Assigned vendor id to this fee."
+    DayPart:
+      title: Day Part
+      type: object
+      description: "Day parts are time periods in which a subset of items are available that is pulled from Connect."
+      properties:
+        name:
+          type: string
+          description: "Day part name"
+        id:
+          type: integer
+          description: "Day part identifier"
+        days:
+          type: array
+          items:
+            $ref: '#/components/schemas/DayPartDay'
+    DayPartDay:
+      title: Day Part Day
+      type: object
+      description: "The part(range of hours) of a given day when an item is available"
+      properties:
+        day:
+          type: string
+          description: "The day of the week when the items assigned to the day part will be available"
+        start_time:
+          type: string
+          format: ISO8601
+          description: "The hour of the day in which the availability period for items assigned to the day part starts"
+        end_time:
+          type: string
+          format: ISO8601
+          description: "The hour of the day in which the availability period for items assigned to the day part ends"
+    DiscountsResponse:
+      title: Discounts Response
+      type: object
+      description: "This describe the structure of the response from discounts endpoint"
+      properties:
+        discounts:
+          type: array
+          items:
+            $ref: '#/components/schemas/DisplayReduction'
+    DisplayReduction:
+      title: Display Reduction
+      type: object
+      description: "Reduction object, this reduction is a minimal version of a normal reduction, coming from stored discounts created on **Discounts->discounts** in Connect WEB"
+      properties:
+        id:
+          type: string
+          description: "Internal ID for the reduction"
+          example: "123"
+        name:
+          type: string
+          description: "Reduction name"
+          example: "Buy One Item, Get 1 Free"
+        tags:
+          type: array
+          items:
+            type: string
+            description: "Reference Tag(s) assigned or added to the reductions"
+          example:
+            - "10Off"
+            - "50Off"
+    ExternalData:
+      title: External Data
+      description: External payment data, Record of a payment not run through Connect
+      type: object
+      properties:
+        card_art_cmid:
+          type: string
+          example: ""
+          description: Card CMID
+        auth_amount:
+          type: string
+          example: "72.44"
+          description: String representation of the auth amount
+        auth_currency:
+          type: string
+          example: "USD"
+          description: String representation of currency type
+        auth_status_code:
+          type: string
+          example: A
+          description: Auth status code
+        auth_code:
+          type: string
+          example: NU1508
+          description: Auth code
+        balance:
+          type: string
+          example: "72.44"
+          description: Account Balance
+        capture_method:
+          type: string
+          example: SWIPED
+          enum:
+            - SWIPED
+            - MANUAL
+          description: How the credit card information was captured
+        card_class:
+          type: string
+          example: ""
+          description: Card class name
+        card_status_code:
+          type: string
+          example: SUCCESS
+          description: Card status code result
+        card_token:
+          type: string
+          example: 4111111111111111
+          description: Cart internal token
+        card_type:
+          type: string
+          example: "CREDIT_CARD"
+          description: Issuing credit company
+        confirmation_code:
+          type: integer
+          example: 447572755357
+          description: Confirmation payment code
+        device_transaction_id:
+          type: string
+          example: "6494940015424444710 8594968817264133960"
+          description: Device transaction identifier
+        expiration_date:
+          type: string
+          example: "0204"
+          description: String representation of card's expiration date
+        invoice_number:
+          type: string
+          example: "123456789ade"
+          description: Should be the same as deviceOrderId
+        issuer_name:
+          type: string
+          example: "CHASE"
+          description: Issuing bank
+        masked_acc:
+          type: string
+          example: "1234***********9098"
+          description: obfuscated card number
+        payment_gateway:
+          type: string
+          example: "FIPAY"
+          description: External patement gateway name
+        payment_partner_data:
+          type: object
+          description: Data used and populated internally to facilitate returns for transactions using the PPI service.
+          $ref: '#/components/schemas/PaymentPartnerData'
+        receipt_identifier:
+          type: object
+          description: Not yet defined
+          $ref: '#/components/schemas/ReceiptIdentifier'
+        req_amount:
+          type: string
+          example: "50.20"
+          description: Requested amount
+        req_currency:
+          type: string
+          example: USD
+          description: Requested currency
+        transaction_identifier:
+          type: object
+          $ref: '#/components/schemas/TransactionIdentifier'
+        transaction_type:
+          type: string
+          example: Purchase
+          enum:
+            - Purchase
+            - Return
+            - Void
+            - Sale
+          description: Purchase, return, void, sale etc.
+        transaction_uid:
+          type: string
+          description: Should contain the same value as deviceTransactionId
+          example: "123456783ada"
+        entitlement_id:
+          type: string
+          example: ""
+          description: Entitlement identifier
+        entitlement_type:
+          type: string
+          example: ""
+          description: Entitlement type
+    GetItemResponseV1:
+      title: Get item V1 Response
+      type: object
+      description: "This object represents a response for get item version one (v1). It contains an element of type `item`"
+      properties:
+        item:
+          $ref: '#/components/schemas/MenuItem'
+    GetItemResponseV2:
+      title: Get items response V2
+      type: object
+      description: This object represents a response for the endpoint `GET /ordering/venues/{venue_id}/vendors/{vendor_id}/items` version two (v2). It contains an array of elements of type `item` with nested modifiers instead of simple items.
+      properties:
+        item:
+          type: array
+          items:
+            $ref: '#/components/schemas/ItemV2'
+    GetVenuesResponse:
+      title: Get venues response
+      type: object
+      description: This object represents a response for the endpoint `GET /ordering/corporate/{corporate_id}/venues`. It contains an array of elements of type `venue`.
+      properties:
+        venues:
+          type: array
+          items:
+            $ref: '#/components/schemas/Venue'
+    Venue:
+      title: Venue Object
+      type: object
+      description: This object represents a venue and includes its properties
+      properties:
+        venue_id:
+          type: string
+          description: Venue identifier
+          example: "22"
+        admin_email:
+          type: string
+          description: administrator email
+          example: "some@email.com"
+        call_number:
+          type: string
+          example: "1-800-55555555"
+        convenience_fee:
+          type: number
+          description: convenience fee set up in connect for the venue
+          example: 1.5
+        default_vendor_id:
+          type: string
+          description: default vendor id set up in connect
+          example: "12"
+        event:
+          type: string
+          description: Event title
+          example: "January 26th - Disney on Ice: Worlds of Enchantment - San Diego"
+        fee:
+          type: boolean
+          description: Describes if fees are activated or not
+          example: true
+        fee_in_percent:
+          type: boolean
+          description: Describes if the fee should be applied as a percentage
+          example: false
+        fee_text:
+          type: string
+          description: Fee description
+          example: Some fee description
+        image_url:
+          type: string
+          description: Url for the the display Image
+          example: "http://someurl.net/image.png"
+        info:
+          type: string
+          example: "some info"
+        info_only:
+          type: boolean
+          example: true
+        is_drink_limit_per_event:
+          type: boolean
+          description: Sets an amount of drinks limit for the event
+          example: true
+        is_open:
+          type: boolean
+          description: Tells if the venue is open
+          example: true
+        links:
+          type: string
+          example: http://valleyviewcasinocenter.com
+        name:
+          type: string
+          description: Venue name
+          example: Valle View Casino
+        seat_required:
+          type: boolean
+          example: false
+        status:
+          type: number
+          example: 1
+        text_number:
+          type: string
+          example: "45678"
+        time_zone:
+          type: string
+          example: "America/Los_Angeles"
+        tip_status:
+          type: number
+          description: Status for the tip 1-ENABLE 0-DISABLE
+          enum:
+            - 1
+            - 0
+          example: 1
+        type:
+          type: number
+          example: 1
+        alcohol_enabled:
+          type: boolean
+          description: Show if alcohol sells are enabled
+          example: true
+        disable_receipt:
+          type: boolean
+          description: Disable receipt print
+          example: false
+        email_opt_in_enabled:
+          type: boolean
+          example: true
+        attributes:
+          type: array
+          items:
+            $ref: '#/components/schemas/Attribute'
+        custom_fields:
+          type: array
+          items:
+            $ref: '#/components/schemas/CustomField'
+    ItemV2:
+      title: Items with modifiers (V2)
+      type: object
+      description: This object represents an item for the endpoint `GET /ordering/venues/{venue_id}/vendors/{vendor_id}/items`
+      properties:
+        item:
+          $ref: '#/components/schemas/SellableAPIItem'
+        active_price_level:
+          $ref: '#/components/schemas/PriceLevel'
+        subvendor_id:
+          $ref: '#/components/schemas/SubVendorID'
+    SubVendorID:
+      title: Sub Vendor ID
+      type: string
+      description: List of identifiers that represents the sub-vendors assigned to a vendor (venue level). This element is created in connect under the Vendors page. Click on the `Add Sub` button that corresponds to the desired vendor. After the sub-vendor creation, it can be assigned to an existing item under the page Items > Items > Assigned Vendor. If this value is not set in connect the value "0" is returned.
+      example: "5"
+    LevelsMalformed:
+      title: Checkout Levels Malformed
+      properties:
+        error:
+          type: string
+          description: "Documentation Forthcoming"
+    MenuDayPart:
+      title: Menu Day Part
+      type: object
+      description: "MenuDayPart schema describes the elements of the Menu V1 endpoint response"
+      properties:
+        daypart_id:
+          type: string
+          description: "Unique identifier in Connect of the vendor day part"
+        daypart_name:
+          type: string
+          description: "Name of the vendor day part"
+          example: "Monday mornings"
+        days:
+          type: array
+          description: "Array of days and time frame of the days included in the day part"
+          items:
+            $ref: '#/components/schemas/DayPartDay'
+        items:
+          type: array
+          description: "Array of all the items available for the vendor in plain item instructure"
+          items:
+            $ref: '#/components/schemas/MenuItem'
+    MenuDayPartV2:
+      title: Menu Day Part
+      type: object
+      properties:
+        daypart_id:
+          type: string
+          description: "Unique identifier in Connect of the vendor day part"
+          example: "123"
+        daypart_name:
+          type: string
+          description: "Name of the vendor day part"
+          example: "Monday mornings"
+        days:
+          type: array
+          description: "Array of days and time frame of the days included in the day part"
+          items:
+            $ref: '#/components/schemas/DayPartDay'
+        items:
+          type: array
+          description: "Array of all the items available for the vendor in node map structure"
+          items:
+            $ref: '#/components/schemas/ItemV2'
+    MenuItem:
+      title: Menu Item
+      required:
+        - add_price_override
+        - alcohol
+        - cost
+        - daypart_ids
+        - default
+        - description
+        - id
+        - image_url
+        - name
+        - original_bundle_cost
+        - original_cost
+        - sku
+        - status
+        - tare_weight
+        - type
+        - unit_cost
+        - weight_item
+      type: object
+      properties:
+        id:
+          type: string
+          description: "Unique identifier of the item in Connect"
+          example: "123"
+        name:
+          type: string
+          description: "Original name of the item. Does not support i18n"
+          example: "Gouda Beef Burger"
+        description:
+          type: string
+          description: "Short description of the item. Connect configurable"
+          example: "200gr of beef wrapped in gouda in home made burger buns"
+        status:
+          type: string
+          enum:
+            - UNASIGNED
+            - INACTIVE
+            - ACTIVE
+            - DELETED
+          description: "Describes the current status of the item. Can be configured in Connect.<br/> Possible values:
+
+            - UNASIGNED: The item is not assigned. Can't  be displayed or interacted with
+
+            - INACTIVE: The item may be available for display but cannot be interacted with
+
+            - ACTIVE: Can be seen and interacted with
+
+            - DELETED: The item has been deleted (soft) from Connect. Can be interacted to set it active or inactive"
+        type:
+          type: string
+          enum:
+            - FOOD
+            - DRINK
+            - MIXER
+            - MIXER_BUILT
+            - MERCH
+            - BUNDLE
+            - PARKING
+            - TICKET
+            - GIFT_CARD
+            - SHIPPING
+            - INTANGIBLE_MERCHANDISE
+            - OTHER
+          description: "Describes the mayor category the ite belongs to. Can be configured in Connect.<br/> Possible values:
+
+            - FOOD: Edibles
+  
+            - DRINK: Beverages. Alcoholic beverages also have **alcohol** property set to TRUE
+  
+            - MIXER: Custom made drinks
+  
+            - MIXER_BUILT: Pre-made mixer drinks
+  
+            - MERCH: Any kind of merchandise like T-Shirts, mugs, etc.
+  
+            - BUNDLE: A package of two items (food and beverage)
+  
+            - PARKING: Parking pass items
+  
+            - TICKET: Event tickets
+  
+            - GIFT_CARD: Venue gift cards
+  
+            - SHIPPING: Shipping fees or services
+  
+            - INTANGIBLE_MERCHANDISE: Digital merchandise and alikes
+  
+            - OTHER: Items that don't belong to any of the previous categories"
+        cost:
+          type: number
+          description: "Item total cost. Can be modified by quantities, taxes, or discounts."
+          example: 3.14
+        unit_cost:
+          type: number
+          description: "The price of a single unit of the item."
+          example: 1
+        original_cost:
+          type: number
+          description: "The original cost of the item, before any type of discounts or extra charges have been added."
+          example: 0.5
+        original_bundle_cost:
+          type: number
+          description: "The original cost of the bundle, before any discount or extra charges have been added."
+          example: 1.13
+        tare_weight:
+          type: number
+          description: "Net weight of the item."
+          example: 1.166
+        alcohol:
+          type: boolean
+          description: "Flag that indicates if a beverage is alcoholic or not."
+          example: true
+        weight_item:
+          type: boolean
+          description: "Flag that indicates if the item weight has to be measured for charging."
+          example: false
+        default:
+          type: boolean
+          description: "Indicates if the item is preselected."
+          example: true
+        calories:
+          type: number
+          description: "The number of calories an item has."
+          example: 1.166
+        sku:
+          type: string
+          description: "SKU number of the item."
+        daypart_ids:
+          type: array
+          items:
+            type: string
+            description: "Array containing the unique identifiers in Connect of the day parts this item is assigned to"
+          example:
+            - "10"
+            - "25"
+        modifiers:
+          type: array
+          description: "Array containing available modifiers for the item"
+          items:
+            $ref: '#/components/schemas/Modifier'
+        wizard_steps:
+          type: array
+          description: "Array containing the steps required to build or prepare this item. It may or may not include modifiers"
+          items:
+            $ref: '#/components/schemas/WizardStep'
+        taxes:
+          type: array
+          description: "Array containing the tax rates that apply to the item"
+          items:
+            $ref: '#/components/schemas/MenuItemTax'
+        categories:
+          type: array
+          description: "Custom report categories for the item. Can be configured in Connect Report Category"
+          items:
+            $ref: '#/components/schemas/CartItemCategory'
+        image:
+          type: string
+          description: "Contains the server location (url) of the item image"
+          example: "http://uploads.dev.ent.appetize-dev.com/images/thumb_239_1600969890.png"
+        calories_label:
+          type: string
+          description: "the item unit or portion in which the calories are expressed. Package, portion, etc."
+          example: "calories"
+        item_attributes:
+          type: array
+          description: "Array including a additional attributes of the item. The attributes are special traits or considerations the item requires, like disclaimers or warnings."
+          items:
+            $ref: '#/components/schemas/ItemAttribute'
+        allow_sold_out_sales:
+          type: boolean
+          description: "Flag that indicates is an item can still be sold after its inventory has ben exhausted"
+          example: true
+        images:
+          type: array
+          description: "Array containing the server location (url) of the item images"
+          items:
+            $ref: '#/components/schemas/ItemImage'
+        item_max_quantity:
+          type: string
+          description: "Indicates the maximum quantity of an item"
+          example: "10"
+        min_qty_per_transaction:
+          type: number
+          description: "Indicates the minimum quantity per item"
+          example: 1
+        display_name:
+          type: string
+          description: "The name of the item to be displayed. Can be configured in Connect"
+          example: "Cheeseburger"
+        interact_display_name:
+          type: string
+          description: "The name of the item to be displayed in Interact. Can be configured in Connect"
+          example: "Cheeseburger IW"
+        sold_out:
+          type: boolean
+          description: "Flag that indicates if the inventory of an item has been exhausted"
+          example: false
+        show_description:
+          type: boolean
+          description: "Flag that indicates if UI should display the description property"
+          example: true
+        sort_order:
+          type: string
+          description: "Number indicating the sort order. Smaller numbers have higher priority. <br> If two objects have the same priority, then they are sorted alphabetically. <br> Every item with sort order defined has higher priority than those who don't have it."
+          example: "1"
+        featured:
+          type: boolean
+          description: "Flag that indicates if an item must be displayed in the featured section of the UI"
+          example: true
+        subvendor_id:
+          type: number
+          description: "Unique identifier in Connect of the subvendor serving the item"
+          example: 22
+        item_restrictions:
+          type: array
+          description: "Documentation Forthcoming"
+          items:
+            $ref: '#/components/schemas/ItemRestriction'
+        custom_fields:
+          type: array
+          description: "Documentation Forthcoming"
+          items:
+            $ref: '#/components/schemas/ItemCustomField'
+        pos_category_ids:
+          type: array
+          description: "Array containing unique POS categories identifiers. POS categories are a mechanism to allow unlimited nested categorization of items. Can be configured in Connect"
+          items:
+            type: string
+          example:
+            - "10"
+            - "25"
+        upsell_items:
+          type: array
+          description: "List of upsell items.  An upsell item is an extra item that gets offered as a suggestion when selling a product.  They are set in connect."
+          items:
+            $ref: '#/components/schemas/UpsellItem'
+      example:
+        id: "12691"
+        name: Cheeseburger
+        description: Salty blue cheese, sweet onions, and juicy beef are a classic
+          and addictive combination.
+        status: ACTIVE
+        type: FOOD
+        cost: 8.44
+        unit_cost: 0
+        original_cost: 8.55
+        original_bundle_cost: 5.44
+        tare_weight: 2.34
+        alcohol: false
+        weight_item: false
+        default: false
+        calories: 560.44
+        sku: "58889309657"
+        image: "test.jpg"
+        daypart_ids:
+          - "10"
+          - "25"
+        modifiers:
+          - id: 123
+            name: Mustard
+            display_name: Lots of Mustard
+            description: Yellow mustard
+            status: ACTIVE
+            sku: abc123
+            modifier_id: 5335
+            image_url: mustard.jpg
+        wizard_steps:
+          - id: "123"
+            title: Wizard Steps
+            description: Would you like to modify your burger?
+            index: 0
+            multiple_choice: true
+            is_required: true
+            enabled_min_max_modifiers: true
+            cross_threshold: true
+            additional_modifier_charge: 0.99
+            min_modifiers: 2
+            max_modifiers: 6
+            modifiers:
+              - id: "123"
+                name: Mustard
+                display_name: Lots of Mustard
+                description: Yellow mustard
+                status: ACTIVE
+                sku: abc123
+                modifier_id: "5335"
+                image_url: mustard.jpg
+        taxes:
+          - id: "123"
+            order: 0
+            is_active: true
+            is_geo_tax: false
+            type: TAX_TYPE_EXCLUSIVE
+            value_type: TAX_VALUE_TYPE_PERCENTAGE
+            threshold_logic: THRESHOLD_LOGIC_UNASSIGNED
+            rate: 9.89
+            price_threshold:
+              amount: 10.23
+            name: My Tax Rate
+            code: ""
+        categories:
+          - id: "15876"
+            name: "Category Food"
+            level: "The category level in the category hierarchy"
+        item_attributes:
+          - id: "21"
+            name: "mexican"
+            description: "mexican food"
+            sort_order: 0
+            display_name: "mexican"
+            display_description: "mexican food"
+            attribute_image_icon: ""
+        images:
+          - image_full_res: "http://uploads.dev.ent.appetize-dev.com/images/full_res_239_1600969890.png"
+            image: "http://uploads.dev.ent.appetize-dev.com/images/thumb_239_1600969890.png"
+        item_restrictions:
+          - type: "restriction type"
+            name: "restriction name"
+            value: 5
+        custom_fields:
+          - id: "field id"
+            value: "field value"
+            key: "field key"
+            name: "field name"
+        calories_label: "calories"
+        allow_sold_out_sales: true
+        item_max_quantity: "2"
+        display_name: "Cheeseburger"
+        interact_display_name: "Cheeseburger IW"
+        sold_out: true
+        show_description: true
+        sort_order: "1"
+        featured: false
+        subvendor_id: 22
+        pos_category_ids:
+          - "10"
+          - "25"
+        upsell_items:
+          - id: "1023"
+          - id: "25364"
+    ItemAttribute:
+      title: Item Attribute
+      type: object
+      description: The different attributes associated to an item. This is set up in Connect and helps determine where and how a given item can be used, as well as which functionality is or is not applicable to it.
+      properties:
+        id:
+          type: string
+          description: "Identifier given to item upon creation in Connect"
+        name:
+          type: string
+          description: "Name made upon creation of item. Updatable, non-unique"
+        description:
+          type: string
+          description: "Short description of the attribute. Updatable, non-unique"
+        sort_order:
+          type: number
+          description: "Number indicating the sort order. Smaller numbers have higher priority. <br> If two objects have the same priority, then they are sorted alphabetically. Every item with sort order defined has higher priority than those who don't have it."
+        display_name:
+          type: string
+          description: "Name of the attribute to be displayed in UI. When not set, the *name* property is used."
+        display_description:
+          type: string
+          description: "Description of the attribute to be displayed in UI. When not set, the *description* property is used."
+        attribute_image_icon:
+          type: string
+          description: "The server location (URL) of the attribute icon image."
+      example:
+        id: "21"
+        name: "mexican"
+        description: "mexican food"
+        sort_order: 0
+        display_name: "mexican"
+        display_description: "mexican food"
+        attribute_image_icon: ""
+    ItemImage:
+      title: Item Image
+      type: object
+      description: "An object containing the server location (URL) of the item images"
+      properties:
+        image_full_res:
+          type: string
+          description: "Contains a link to the full resolution image of the item"
+        image:
+          type: string
+          description: "Contains a link to a lower quality image of the item"
+      example:
+        image_full_res: "http://uploads.dev.ent.appetize-dev.com/images/full_res_239_1600969890.png"
+        image: "http://uploads.dev.ent.appetize-dev.com/images/thumb_239_1600969890.png"
+    ItemRestriction:
+      title: Item Restriction
+      type: object
+      description: "Sale restrictions that may apply over an item"
+      properties:
+        type:
+          type: string
+          description: "The type of the restriction. Indicates how should be used.<br/> Possible values:
+          - AGE: An age restriction for the purchase of an item.
+          - EXTERNAL: Any other type of restriction that's required"
+        name:
+          type: string
+          description: "Name of the restriction. To be displayed in UI"
+        value:
+          type: number
+          description: "When the restriction is of type *AGE* this field represents the age limit for the restriction to apply. It has no use in other types of restrictions."
+      example:
+        type: "restriction type"
+        name: "restriction name"
+        value: 5
+    ItemCustomField:
+      title: Item Custom Field
+      type: object
+      description: "Custom fields are any extra property a user needs to add to an item. Used for customization and improving of reporting and other uses."
+      properties:
+        id:
+          type: string
+          description: "The unique identifier in Connect of the custom field"
+        value:
+          type: string
+          description: "The actual value of the property"
+        key:
+          type: string
+          description: "The key used to locate the property internally"
+        name:
+          type: string
+          description: "A name for the field. Can be used for reporting and display purposes"
+      example:
+        id: "field id"
+        value: "field value"
+        key: "field key"
+        name: "field name"
+    MenuNotFound:
+      title: Menu Not Found
+      description: "Documentation Forthcoming"
+    MenuResponse:
+      title: Menu Response
+      type: object
+      description: "Documentation Forthcoming"
+      properties:
+        menu:
+          type: array
+          description: "Documentation Forthcoming"
+          items:
+            $ref: '#/components/schemas/MenuDayPart'
+    MenuV2Response:
+      title: Menu V2 response
+      description: "This describe the structure of the response from the Menu V2 endpoint"
+      type: object
+      properties:
+        menu:
+          type: array
+          items:
+            $ref: '#/components/schemas/MenuDayPartV2'
+    UpsellItem:
+      title: Upsell Item
+      type: object
+      description: This object represents an upsell item; an extra item that gets optionally offered to entice the client when a main product is sold.
+      properties:
+        id:
+          type: string
+          example: "15876"
+          description: "Identifier assigned to upsell item.  Set in connect."
+    TipResponse:
+      title: Tip
+      type: object
+      description: "Documentation Forthcoming"
+      properties:
+        message:
+          type: string
+          description: "Documentation Forthcoming"
+          example: "Payment processed"
+    LevelsResponse:
+      title: Levels Response
+      type: object
+      description: "Levels array"
+      properties:
+        levels:
+          type: array
+          items:
+            $ref: '#/components/schemas/Level'
+    Level:
+      title: Level
+      type: object
+      description: "Level basic information"
+      properties:
+        id:
+          type: string
+          description: "Level internal identifier"
+          example: "4"
+        name:
+          type: string
+          description: "Level name"
+          example: "Legends 100 server"
+    LevelNotFound:
+      title: Level Not Found
+      description: "Documentation Forthcoming"
+    PaymentPartnerData:
+      properties:
+        provider:
+          type: string
+          description: string name of the used partner
+        credential:
+          $ref: '#/components/schemas/Credential'
+          description: Contains the basic credentials that will be applied
+        payment_data:
+          type: string
+          description: a is the string just as it comes out of the payment in the generic payment response
+        transaction_uid:
+          type: string
+          description: Should contain the same value as deviceTransactionId
+          example: "123456783ada"
+    ReceiptIdentifier:
+      properties:
+        authorization_code:
+          type: string
+          description: Not yet defined
+          example: "110024"
+    SeatsResponse:
+      title: Seats Response
+      type: object
+      description: "Returns all seats assigned to a venue's level."
+      properties:
+        sections:
+          type: array
+          items:
+            $ref: '#/components/schemas/Section'
+    Section:
+      title: Section
+      type: object
+      description: "Sections consist of an internally generated id and a human readable descriptive name. The hierarchy under which sections exist is as follows: Levels -> Sections"
+      properties:
+        id:
+          type: string
+          description: "Documentation Forthcoming"
+          example: "4"
+        name:
+          type: string
+          description: "Documentation Forthcoming"
+          example: "section A"
+        rows:
+          type: array
+          description: "Documentation Forthcoming"
+          items:
+            $ref: '#/components/schemas/Row'
+    TransactionIdentifier:
+      properties:
+        local_request_id:
+          type: string
+          description: to be defined
+          example: "576408"
+        remote_request_id:
+          type: string
+          description: Unique identifier generated remotely by the Payment.  Processor Gateway for this transaction (may be null if it never reached the Gateway)
+          example: "ID:6592079941720216"
+        merchant_reference_code:
+          type: string
+          description: to be defined
+          example: "6695c4ee4b040ff045743ed37"
+        authorization_code:
+          type: string
+          description: to be defined
+          example: "197408"
+        original_transaction_type:
+          type: string
+          description: to be defined
+          enum:
+            - "SALE"
+            - "VOID"
+            - "REFUND"
+            - "AUTHORIZE"
+            - "ADJUSTMENT"
+            - "CAPTURE"
+          example: "CAPTURE"
+        expiration_date:
+          type: string
+          description: to be defined
+          example: "1223"
+        current_total_amount:
+          type: number
+          description: to be defined
+          example: "22.5"
+        account_token:
+          type: string
+          description: to be defined
+    Row:
+      title: Row
+      type: object
+      description: "Rows consist of an internally generated id and a human readable descriptive name. The name can be modified using Appetize's Connect dashboard. The hierarchy under which rows exist is as follows: Levels -> Sections -> Rows"
+      properties:
+        id:
+          type: string
+          description: "Documentation Forthcoming"
+          example: "4"
+        name:
+          type: string
+          description: "Documentation Forthcoming"
+          example: "row 12"
+        seats:
+          type: array
+          description: "Documentation Forthcoming"
+          items:
+            $ref: '#/components/schemas/Seat'
+    Seat:
+      title: Seat
+      type: object
+      description: "Seats consist of an internally generated id and a human readable descriptive name. The name can be modified using Appetize's Connect dashboard. The hierarchy under which seats exist is as follows: Levels -> Sections -> Rows -> Seats"
+      properties:
+        id:
+          type: string
+          description: "Documentation Forthcoming"
+          example: "4"
+        name:
+          type: string
+          description: "Documentation Forthcoming"
+          example: "seat 1"
+    Modifier:
+      title: Modifier
+      type: object
+      description: "Modifiers are other items that can be included to change or enhance an item. They can be configured in Connect."
+      properties:
+        id:
+          type: string
+          description: "Unique identifier of the modifier-item association. Changes every time the item is assigned to an item"
+          example: "456"
+        name:
+          type: string
+          description: "Original name of the item. Does not support i18n"
+          example: "Onion rings small"
+        description:
+          type: string
+          description: "Short description of the item. Connect configurable"
+          example: "3 onion rings with sauce of your choice"
+        display_name:
+          type: string
+          description: "The name of the item in displays. When not configured, the **name** property will be used."
+        status:
+          type: string
+          enum:
+            - UNASIGNED
+            - INACTIVE
+            - ACTIVE
+            - DELETED
+          description: "Describes the current status of the item. Can be configured in Connect.<br/> Possible values:
+
+            - UNASIGNED: The item is not assigned. Can't  be displayed or interacted with
+
+            - INACTIVE: The item may be avilable for display but cannot be interacted with
+
+            - ACTIVE: Can be seen and interacted with
+
+            - DELETED: The item has been deleted (soft) from Connect. Can be interacted to set it active or inactive"
+        sku:
+          type: string
+          description: "SKU number of the item"
+        modifier_id:
+          type: string
+          description: "Unique identifier in Connect of the modifier item"
+        cost:
+          type: number
+          description: "Total cost of the modifier"
+      example:
+        id: "123"
+        name: Mustard
+        display_name: Lots of Mustard
+        description: Yellow mustard
+        status: ACTIVE
+        sku: abc123
+        modifier_id: "5335"
+        cost: 12.99
+    OpenHour:
+      title: Open Hour
+      type: object
+      description: "Defines the range of time for which the vendor is open."
+      properties:
+        day:
+          type: integer
+          description: "UNASSIGNED = 0; MONDAY = 1; TUESDAY = 2; WEDNESDAY = 3; THURSDAY = 4; FRIDAY = 5; SATURDAY = 6; SUNDAY = 7;"
+        start_time:
+          type: integer
+          description: "Amount of seconds since midnight that represent the open time.  This value, for its nature, is not time zoned"
+        end_time:
+          type: integer
+          description: "Amount of second since midnight that represent the closing time.  This value, for its nature, is not time zoned"
+    OrderType:
+      title: Order Type
+      type: object
+      description: "User defined field that describes an order type.  This is set inside connect"
+      properties:
+        id:
+          type: string
+          description: "Internally generated order type identifier"
+        name:
+          type: string
+          description: "Contains the name of the order type associated to the previous ID field.  The name gets set in connect under the order types section and the id is internally associated when created"
+    Payment:
+      title: Payment
+      required:
+        - amount
+        - authorization_code
+        - card_encoded
+        - card_number
+        - card_status
+        - card_type
+        - cardholder_fullname
+        - cardholder_name
+        - code_map
+        - encryption_type
+        - exp_date
+        - fee
+        - payment_index
+        - payment_status
+        - payment_type
+        - payment_valid
+        - refunded
+        - remaining_balance
+        - subpayment_type
+        - subtotal_amount
+        - tax
+        - tip
+      type: object
+      description: Object containing all the information to be added as payment to an order.
+      properties:
+        amount:
+          type: number
+          format: double
+          example: 83.74
+          description: Payment amount.
+        authorization_code:
+          type: string
+          example: "A10123"
+          description: Issuer authorization reference code for CC payments (Response).
+        card_encoded:
+          type: boolean
+          example: true
+          description: Indicates whether the card number is encoded.
+        cardholder_fullname:
+          type: string
+          format: ISO7813
+          example: "Test Card 12       UAT USA"
+          description: Extended name. Used when length > 26 chars using ISO7813, usually from EMV tag 5F20.
+        cardholder_name:
+          type: string
+          example: "Test Card"
+          format: ISO7813
+          description: Short name in ISO7813 format, parsed from track data or EMV tag 9F0B.
+        card_number:
+          type: string
+          example: 374245XXXXX1006
+          description: |-
+            Card Number always is masked, some examples:
+            - 374245XXXXX1006
+            - 374245000001006
+        card_status:
+          type: string
+          example: Active
+          description: |-
+            Likely a gift card field returned from status query, some examples:
+            - Active
+            - Inactive
+            > This value depends on issuer.
+        card_type:
+          type: string
+          enum:
+            - VISA
+            - MASTERCARD
+            - DISCOVER
+            - AMEX
+          example: VISA
+          description: Card issuer name.
+        code_map:
+          type: integer
+          example: 22
+          description: Code maps are the core of how CBORD works, They are configurable on Connect - Settings - Integrations - CBORD page.
+        custom_tender_id:
+          type: string
+          example: "1234"
+          description: |-
+            The ID of the custom tender used to make the purchase.
+            To use a custom tender as payment, you must include the custom tender ID and ensure you're using payment type 12.
+            You can also use the additional_data field to indicate the invoice number for the payment.
+        encryption_type:
+          type: string
+          enum:
+            - cp
+            - cnp
+            - p2pe
+            - onguard
+            - applepay
+            - nfc
+            - nfc_unencrypted
+            - emv
+          example: cp
+          description: |-
+            This describes both encryption type AND entry mode.
+            ```
+            ENCRYPTION_TYPE_CARD_PRESENT = "cp"; //swiped with unencrypted swiper, encrypted with Appetize Key
+            ENCRYPTION_TYPE_CARD_NOT_PRESENT = "cnp"; //manually entered, encrypted with Appetize Key
+            ENCRYPTION_TYPE_P2PE = "p2pe"; //P2P injected reader, swiped. Likely encrypted with BridgePay Key
+            ENCRYPTION_TYPE_ON_GUARD = "onguard"; //Ingenico Encryption,
+            ENCRYPTION_TYPE_APPLE_PAY = "applepay"; //Should deprecate. Mobile payment using ACS NFC reader, denoting ApplePay, could be GPay..
+            ENCRYPTION_TYPE_NFC = "nfc"; //Ingenico contactless tap (MSD) using onGuard encryption
+            ENCRYPTION_TYPE_NFC_UNENCRYPTED = "nfc_unencrypted"; // Non-CC ACS NFC reader, i.e.Fortress?
+            ENCRYPTION_TYPE_EMV = "emv"; //Ingenico chip inserted using onGuard encryption
+            ```
+        exp_date:
+          type: string
+          format: MM/YY
+          example: 09/23
+          description: Credit card expiration date.
+        external_data:
+          $ref: "#/components/schemas/ExternalData"
+        fee:
+          type: number
+          format: double
+          example: 35.53
+          description: Fee amount.
+        gateway_response_data:
+          type: string
+          example: "{\"customResponseData\":\"Some custom response here\"}"
+          description: |-
+            BLOB containing all the data received from indirect integration
+        payment_index:
+          type: integer
+          example: 0
+          description: Position in JSON payments array
+        payment_status:
+          type: string
+          enum:
+            - COMPLETED
+            - REFUNDED
+            - FAILED
+            - DECLINED
+            - AWAITING PAYMENT
+            - OFFLINE
+          example: COMPLETED
+          description: current status of the payment.
+        payment_type:
+          type: integer
+          example: 1
+          description: |
+            Describes the link to a value in the paymentType Block in Store or Vendor
+            ```
+            SERVER_PAYMENT_TYPE_UNDEFINED = -1;
+            SERVER_PAYMENT_TYPE_SPLIT_INT = 0;
+            SERVER_PAYMENT_TYPE_CREDIT_INT = 1;
+            SERVER_PAYMENT_TYPE_CASH_INT = 2;
+            SERVER_PAYMENT_TYPE_GIVEX_INT = 3;
+            SERVER_PAYMENT_TYPE_PARTIAL_INT = 4;
+            SERVER_PAYMENT_TYPE_HOUSE_INT = 5;
+            SERVER_PAYMENT_TYPE_BEACON_INT = 6;
+            SERVER_PAYMENT_TYPE_APPLEPAY_INT = 7;
+            SERVER_PAYMENT_TYPE_WRISTBAND_INT = 8;
+            SERVER_PAYMENT_TYPE_SUBMIT_WITH_NO_PAYMENT_INT = 9;
+            SERVER_PAYMENT_TYPE_STORED_VALUE_INT = 11;
+            SERVER_PAYMENT_TYPE_SKIDATA_DIRECT_INT = 14;
+            SERVER_PAYMENT_TYPE_LOADED_VALUE_INT = 15;
+            SERVER_PAYMENT_TYPE_TIN_CAPS_INT = 16;
+            SERVER_PAYMENT_TYPE_FOLIO_INT = Integer.valueOf(SERVER_PAYMENT_TYPE_FOLIO);
+            SERVER_PAYMENT_TYPE_DINING_PLAN_INT = Integer.valueOf(SERVER_PAYMENT_TYPE_DINING);
+            SERVER_PAYMENT_TYPE_FIPAY_GIFT_MERCH_CREDIT_INT = 23;
+        payment_valid:
+          type: boolean
+          example: true
+          description: abstract implementation -> payment_status != null && !payment.status.equals(PAYMENT_STATUS_ERROR_FATAL)
+        payment_uuid:
+          type: string
+          format: uuid
+          example: e54f5e96-0139-4fca-80b9-ef7ec6d03f1b
+          description: Unique Identifier for this payment.
+        refunded:
+          type: boolean
+          example: true
+          description: On order lookup we return all payments. This fields denotes whether or not this payment in the payments array has already been refunded.
+        remaining_balance:
+          type: number
+          format: double
+          example: 8.21
+          description: Remaining Balance of gift card after payment. Typically Gift Cards can be from Debit Gift Cards but not always.
+        subpayment_type:
+          type: integer
+          example: 1
+          description: |
+            Describes the secondary properties of primary payment type (conceptual example -> CreditCard.Elavon, GiftCard.SkiData, where Elavon and SkiData are the subpayment type)
+            ```
+            SERVER_SUBPAYMENT_TYPE_UNDEFINED = -1;
+            SERVER_SUBPAYMENT_TYPE_BRAINTREE = 3;
+            SERVER_SUBPAYMENT_TYPE_SPREEDLY = 4;
+            SERVER_SUBPAYMENT_TYPE_FORTRESS = 5;
+            SERVER_SUBPAYMENT_TYPE_GIVEX = 7; // DSI-346 Is this correct?
+            SERVER_SUBPAYMENT_TYPE_FREEWAY = 8;
+            SERVER_SUBPAYMENT_TYPE_SKIDATA_POINTS = 9;
+            SERVER_SUBPAYMENT_TYPE_SKIDATA_CASH = 10;
+            SERVER_SUBPAYMENT_TYPE_STADIS = 12;
+            SERVER_SUBPAYMENT_TYPE_SKIDATA_DIRECT = 13;
+            SERVER_SUBPAYMENT_TYPE_SKIDATA_LOADED_VALUE = 14;
+            SERVER_SUBPAYMENT_TYPE_MONERIS = 11;
+            SERVER_SUBPAYMENT_TYPE_CBORD = 16;
+            SERVER_SUBPAYMENT_TYPE_EIGEN = 17;
+            SERVER_SUBPAYMENT_TYPE_FIPAY = 20;
+            SERVER_SUBPAYMENT_TYPE_LEVEL_UP = 26;
+            SERVER_SUBPAYMENT_TYPE_FOLIO = 24;
+            SERVER_SUBPAYMENT_TYPE_DINING = 24;
+            SERVER_SUBPAYMENT_TYPE_DVIC = 20;
+            SERVER_SUBPAYMENT_TYPE_VALUTEC = 29;
+            SERVER_SUBPAYMENT_TYPE_VANTIV = 39;
+            SERVER_SUBPAYMENT_TYPE_FREEWAY_SDK = 32;
+            SERVER_SUBPAYMENT_TYPE_ELAVON_SDK = 36;
+            ```
+        subtotal_amount:
+          type: number
+          format: double
+          example: 34.02
+          description: Subtotal amount is without tax, tip, fee, etc.
+        tax:
+          type: number
+          format: double
+          example: 2.17
+          description: Amount of payment allocated to tax.
+        tender_name:
+          type: string
+          enum:
+            - Cash
+            - Coupon Code
+            - Others
+          example: Cash
+          description: Tender Type or Paymnet Method.
+        tip:
+          type: number
+          format: double
+          example: 2.17
+          description: Amount of payment allocated to tip.
+        payment_identifier_for_display:
+          type: string
+          example: 1234
+        token_value:
+          type: string
+          example: bce451618c93a32e69e7a774504d994c
+        ppi_loyalty_id:
+          type: string
+          example: 4125454
+          description: Loyalty ID used to access PPI discounts.
+        ppi_pin:
+          type: string
+          example: 789
+          description: Secret PIN for PPI discounts
+        additional_data:
+          type: string
+          example: "INV-124679"
+          description: When doing checkout with a custom tender, the **additional_data** property can be used to send an invoice number related to this order for that custom tender.
+        change:
+          type: number
+          format: double
+          example: 4.5
+          description: Amount to be returned to the customer when paying with *cash*.
+        amount_tendered:
+          type: number
+          format: double
+          example: 4.5
+          description: Amount given by the customer when paying with *cash*.
+    PaymentType:
+      title: Payment Type
+      type: object
+      description: |
+        title: Payment types
+        table:
+        | Payment ID | Subpayment ID| Name         |
+        |------------|--------------|--------------|
+        |0|0| Split Payment|
+        |1|0| Credit Card  |
+        |2|0| Paid in cash |
+        |3|0|On loaded ticket (old Givex payment type)|
+        |4|0|Partial Payment|
+        |5|0| On House|
+        |6|0| Beacon|
+        |7|0| ApplePay|
+        |8|0| Wristband|
+        |9|0| Submit With no Payment|
+        |10|0| Credit Chip|
+        |11|5|Stored value - Fortress|
+        |11|6|Stored value - Blackboard|
+        |11|7|Stored value - Givex|
+        |11|8|Stored value - Freeway Gift Card|
+        |11|9|Stored value - Skidata points/member benefits|
+        |11|10|Stored value - Skidata cash/loyalty|
+        |11|12|Stored value - Stadis|
+        |11|15|Streamline|
+        |11|16|Stored value - CBORD|
+        |11|23|Stored value - Lava|
+        |11|29|Stored Value - Valutec Giftcards|
+        |11|30|Stored value - The Customer Connection (TCC)|
+        |11|33|Stored Value - Freeway Stored Value|
+        |11|39|Stored Value - Vantiv Giftcard|
+        |11|40|Atrium|
+        |11|41|Atrium Debit|
+        |11|42|Atrium Meal|
+        |11|44|Freeway External Value|
+        |11|46|Custom PPI Integration|
+        |11|47|Paytronix|
+        |12|0|Custom tender|
+        |13|0|Paypal|
+        |14|0|Skidata Direct Payment|
+        |14|13|Skidata Direct Payment in Enterprise|
+        |15|0|Skidata Loaded Value|
+        |15|14|Skidata Loaded Value in Enterprise|
+        |16|0|Streamline aka Tin Caps Loaded value (Classic checkout only)|
+        |18|20|Prepaid Cards - Disney Rewards|
+        |19|0|Folio Charge|
+        |20|0|Lava|
+        |21|0|Alvarado (Loaded Value)|
+        |22|  |Tokenized Payment|
+        |22|22|Freeway (Tokenized Payment)|
+        |22|45|Elavon (Tokenized Payment)|
+        |23|20|Store Credit|
+        |24|27|Online Order|
+        |25| |Dining Plan|
+        |26|20|Virtual Card (Disney Visa Instant Credit)|
+        |30|35|Punchh|
+        |31|34|Skidata Enterprise Payments (Type 3 integration)|
+
+
+
+
+      properties:
+        id:
+          type: string
+          description: "Payment type identifier"
+        name:
+          type: string
+          description: "Name describing the payment type"
+        subpayment_type_id:
+          type: string
+          description: "Subpayment type for the payment"
+        button_text:
+          type: string
+          description: "User facing name of the payment"
+    SignedCart:
+      title: Signed Cart
+      type: object
+      description: Contains the result of a calculate request, and adds a signature of the content with expiration date.
+      additionalProperties: false
+      properties:
+        cart:
+          $ref: '#/components/schemas/CartResponse'
+        sig:
+          type: string
+          description: The signature is displayed in base64 format, HMAC and SHA256 are used to generate it.
+          example: acP2yuwKrZDutFzVk2N5-QfaihQTVSyHaEeX6kT-aF4
+        exp:
+          type: string
+          description: The expiration date in timestamp format is considered part of the signature, this value cannot be changed.
+          example: "1619037777"
+      required:
+        - cart
+        - sig
+        - exp
+    SignedCartWithModifiersWrapper:
+      title: Signed Cart With Modifiers Wrapper
+      type: object
+      description: This schema exists cause of protobuf internal definition in order to wrap a cart with modifiers.
+      properties:
+        cart_with_modifier_items:
+          $ref: '#/components/schemas/CartWithModifiersResponse'
+    SignedCartWithModifiers:
+      title: Signed Cart With Modifiers
+      type: object
+      description: "A validated cart that contains items that may have root map nodes"
+      additionalProperties: false
+      properties:
+        cart:
+          $ref: '#/components/schemas/SignedCartWithModifiersWrapper'
+        sig:
+          type: string
+          description: The signature is displayed in base64 format, HMAC and SHA256 are used to generate it.
+          example: acP2yuwKrZDutFzVk2N5-QfaihQTVSyHaEeX6kT-aF4
+        exp:
+          type: string
+          description: The expiration date in timestamp format is considered part of the signature, this value cannot be changed.
+          example: "1619037777"
+      required:
+        - cart
+    StoreNotFound:
+      title: Store Not Found
+      type: string
+      description: "This error will be returned when the store used to make a request is not found"
+      example: 404 page not found
+    StoreUser:
+      title: Defines the active user
+      properties:
+        id:
+          type: integer
+          description: "User ID"
+        email:
+          type: string
+          description: "user email"
+    MenuItemTax:
+      title: Menu Item Tax
+      description: This object holds the information of the different tax rates that are assigned to an item. Tax can be added individually or by tax group. They can be assigned to the item or to a vendor through the vendor role.
+      type: object
+      properties:
+        id:
+          type: string
+          description: "Unique identifier of the tax rate in Connect"
+        order:
+          type: integer
+          description: "Order in which the tax rates should be sorted. "
+        is_active:
+          type: boolean
+          description: "Flag that indicates if a tax rate is active and can be applied"
+        is_geo_tax:
+          type: boolean
+          description: "Flag that indicates if the tax rate is a geotax. GeoTax is a an inclusive tax type that allows users to apply an inclusive tax rate to a defined geo-fence."
+        type:
+          type: string
+          enum:
+            - INCLUSIVE
+            - EXCLUSIVE
+          description: "The type of the tax rate. Type directly influences how a tax rate is charged.<br/> Possible values:
+
+          - EXCLUSIVE: Tax rates explicitly added to an item. They are calculated over the item cost and always modify the order total.
+
+          - INCLUSIVE: Tax rates implicitly added to an item. They are included in the item cost and never modify the order total"
+        value_type:
+          type: string
+          enum:
+            - PERCENTAGE
+            - FLAT
+            - TABLE
+          description: "The type in which the tax rate value is expressed.<br/> Possible values:
+
+          - PERCENTAGE: The amount representes a percentage of the item cost
+
+          - FLAT: The amount represents a flat, invariable amount
+
+          - TABLE: The amount represents a specific value of a given tax table."
+        threshold_logic:
+          type: string
+          enum:
+            - NOT SET
+            - FULL
+          description: "When enabled, the tax will be applied to the item only if the cart fullfils the threshold logic.<br/> Possible values:
+
+          - NOT SET: No threshold is configured. The logic cannot be applied
+
+          - FULL: When the price of the item is greater or equal than the threshold value, the threshold logic will apply."
+        rate:
+          type: number
+          description: "The amount of the tax to be applied. It could represent a percentual or flat amount"
+        price_threshold:
+          $ref: '#/components/schemas/TaxPriceThreshold'
+        name:
+          type: string
+          description: "The name of the tax rate. It can be configured in Connect"
+        code:
+          type: string
+          description: "A configurable code for the tax rate. Is empty by default. Can be configured in Connect."
+        generated_id:
+          type: number
+          description: "Documentation Forthcoming"
+      example:
+        id: "123"
+        order: 0
+        is_active: true
+        is_geo_tax: false
+        type: TAX_TYPE_EXCLUSIVE
+        value_type: TAX_VALUE_TYPE_PERCENTAGE
+        threshold_logic: THRESHOLD_LOGIC_UNASSIGNED
+        rate: 9.89
+        price_threshold:
+          amount: 10.23
+        name: My Tax Rate
+        code: ""
+        generated_id: 23
+    VendorRole:
+      title: Vendor Role
+      type: object
+      description: "Documentation Forthcoming"
+      properties:
+        taxes_on_total:
+          type: boolean
+          description: "When true, the vendor's assigned taxes are applied to the subtotal; when false, each individual item's assigned taxes are calculated for each respective item"
+        taxes_on_fees:
+          type: boolean
+          description: "True for taxable fees"
+      example:
+        taxes_on_total: true
+        taxes_on_fees: false
+    VendorIntegrationPermission:
+      title: Vendor Integration Permission
+      type: object
+      description: "Documentation Forthcoming"
+      properties:
+        integration_template_id:
+          type: integer
+          description: "Documentation Forthcoming"
+        status:
+          type: integer
+          description: "Documentation Forthcoming"
+      example:
+        integration_template_id: 123
+        status: 1
+    VendorTax:
+      properties:
+        id:
+          description: "Internal id for the vendor tax.  Gets created when the vendor tax is created in Connect"
+          type: string
+          example: 1234789
+        order:
+          description: "Defines the order in which the tax is applied"
+          type: integer
+          example: 1
+        is_active:
+          description: "Defines if the tax is applied or not.  A true value indicates that it is being applied"
+          type: boolean
+          example: 1
+        is_geo_tax:
+          type: boolean
+          description: "It tells if a location should be used to activate the tax.  Uses specially formatted json location file at tax creation"
+        type:
+          $ref: '#/components/schemas/VendorTaxType'
+        value_type:
+          $ref: '#/components/schemas/VendorTaxValueType'
+        threshold_logic:
+          $ref: '#/components/schemas/VendorTaxThresholdLogic'
+        rate:
+          description: "Basis for the tax.  If it's ValueType Flat, and Rate is 2, it means $2 flat tax.  If it's Percent, it'd be a 2% tax"
+          type: number
+          example: 2
+        price_threshold:
+          type: object
+          description: "Item or order subtotal value that when reached will have the tax applied in its entirety. If tax is triggered at a 20 dollar threshold because value is 36 dollars, taxable amount is 36 and not 16 or 20"
+          properties:
+            amount:
+              type: number
+              example: 20
+        name:
+          type: string
+          description: "Name assigned for the tax in connect"
+          example: "10% inclusive"
+        code:
+          type: string
+          description: "Two digit code that get printed in the receipt.  It is defined by the user in the tax creation process"
+          example: 34
+        generated_id:
+          type: integer
+    VendorTaxThresholdLogic:
+      type: integer
+      description: " Determines at what point to apply the tax.  See price threshhold for further explanation (OAPI doesn't handle this right now) THRESHOLD_LOGIC_UNASSIGNED = 0; THRESHOLD_LOGIC_FULL = 1; THRESHOLD_LOGIC_ABOVE = 2; THRESHOLD_LOGIC_BELOW = 3;"
+      enum: [ 0,1,2,3 ]
+    VendorTaxType:
+      type: integer
+      description: "Predefined tax value to determine if the tax is inclusive or exclusive. Inclusive tax is already accounted in the items prices, exclusive does not. TAX_TYPE_UNASSIGNED = 0; TAX_TYPE_INCLUSIVE = 1; TAX_TYPE_EXCLUSIVE = 2"
+      enum: [ 0,1,2 ]
+      example: 2
+    VendorTaxValueType:
+      type: integer
+      description: "Defines if the tax is a flat, percentile or table tax.  If it is a table tax, it gets determined by subsets of value ranges for the sale amount(low end value and high end value setup in connect when creating the tax) TAX_VALUE_TYPE_UNASSIGNED = 0; TAX_VALUE_TYPE_PERCENTAGE = 1; TAX_VALUE_TYPE_FLAT = 2; TAX_VALUE_TYPE_TABLE = 3;"
+      enum: [ 0,1,2,3 ]
+      example: 1
+    POSCategory:
+      type: object
+      properties:
+        id:
+          type: string
+          description: "Internal system id associated to the category"
+          example: "12345678"
+        display_name:
+          type: string
+          description: "Associated name for the category.  Get assigned at creation time"
+          example: "pos number 1"
+        level:
+          description: "POS categories can be nested.  This value defines their depth level.  LEVEL_UNSPECIFIED = 0; LEVEL_ONE = 1; LEVEL_TWO = 2; LEVEL_THREE = 3;"
+          enum: [ 0,1,2,3 ]
+        parent_category_id:
+          description: "In case of nested categories, a child category will include here the id of the immediate parent category id"
+          type: string
+        sort_order:
+          type: integer
+          description: "Defines the order in which the category gets displayed"
+          example: 2
+        sales_channel:
+          type: string
+          description: "Field used to filter sales.  It is usually POS or KIOSK"
+        image:
+          $ref: '#/components/schemas/Image'
+        image_icon:
+          type: string
+          description: "Defines the icon path.  Normally a .png file"
+          example: http://uploads.dev.ent.appetize-dev.com/receipt-images/thumb_239_1600969890.png
+    Image:
+      title: Image
+      type: object
+      description: "Contains the url paths for an image"
+      properties:
+        image_full_res:
+          type: string
+          description: "Path for the full resolution image"
+        image:
+          type: string
+          description: "Path for the commonly used image"
+      example:
+        image_full_res: "http://uploads.dev.ent.appetize-dev.com/receipt-images/239_1600969637.jpg"
+        image: "http://uploads.dev.ent.appetize-dev.com/receipt-images/thumb_239_1600969637.jpg"
+    ActiveUser:
+      title: Active User
+      type: object
+      description: "Documentation Forthcoming"
+      properties:
+        id:
+          type: string
+          description: "Documentation Forthcoming"
+        email:
+          type: string
+          description: "Documentation Forthcoming"
+      example:
+        id: "5028988"
+        email: "active.user@appetize.com"
+    Taxes:
+      title: Taxes
+      required:
+        - active
+        - generated_id
+        - id
+        - price_threshold
+        - tax_name
+        - tax_rate
+        - tax_type
+        - tax_value
+        - value_type
+      type: object
+      description: Taxes applied to a set of items.
+      properties:
+        id:
+          type: integer
+          example: 16546
+          description: ID of tax type
+        generated_id:
+          type: integer
+          example: 1234
+          description: ID of this Instance of the tax
+        uid:
+          type: string
+          format: uuid
+          description: "Unique service generated UUID"
+          example: "4dc0f47e-5beb-457a-9ec9-32a8f4aefc10"
+        active:
+          type: boolean
+          example: true
+          description: whether this tax is currently active
+        value_type:
+          type: string
+          enum:
+            - PERCENT
+            - FLAT
+            - TABLE
+          example: PERCENT
+          description: The method of tax application
+        price_threshold:
+          type: number
+          example: 20
+          description: Item or order subtotal value that when reached will have the tax applied in its entirety. If tax is triggered at a 20 dollar threshold because value is 36 dollars, taxable amount is 36 and not 16 or 20
+        threshold_logic:
+          type: string
+          example: FULL
+          enum:
+            - FULL
+            - UNDER
+            - BELOW
+          description: Logic used to apply threshold.
+        tax_name:
+          type: string
+          example: Il State Tax
+          description: Readable name of tax for printing
+        tax_rate:
+          type: number
+          example: 5.0
+          description: Percentage of tax rate.
+        tax_code:
+          type: string
+          example: NT
+          description: Code used to identify internaly this Tax.
+        tax_type:
+          type: string
+          enum:
+            - INCLUSIVE
+            - EXCLUSIVE
+          example: INCLUSIVE
+          description: Exclusive is what you see in tax totals. Inclusive is embedded tax in the item which the customer doesn't see directly.
+        tax_value:
+          type: number
+          example: 0.87
+          description: The calculated value.
+    TaxPriceThreshold:
+      title: Tax Price Threshold
+      type: object
+      description: "This object defines the amount the item has to cost in order for the threshold logic to apply"
+      properties:
+        amount:
+          type: number
+          description: "A number representing the price the item must surpass for the threshold logic to apply"
+      example:
+        amount: 12.35
+    TaxRuleSet:
+      title: Tax Rule Set
+      type: object
+      description: "Rules on tax application"
+      properties:
+        is_charged_after_discount:
+          type: boolean
+          description: "Charge the tax after applying the discount"
+        is_tax_on_fee:
+          type: boolean
+          description: "Determines if fee is taxed"
+        is_tax_on_tip:
+          type: boolean
+          description: "Determines if tip is taxed"
+        is_tax_on_total:
+          type: boolean
+          description: "Determines if tax is applied to total amount"
+    UnprocessableEntity:
+      title: Unprocessable Entity
+      properties:
+        Code:
+          type: integer
+          default: 422
+        message:
+          example: "At least one product does not belong to vendor or has incorrect price."
+          type: string
+          description: Response due to an error in the format of the request body, such as a string sent as a number.
+    Content-Type:
+      type: string
+    CartUserRequest:
+      $ref: '#/components/schemas/CartUser'
+    CartUser:
+      title: Cart User
+      type: object
+      description: User properties that can be used in an order, such as discount codes.
+      properties:
+        discounts:
+          $ref: '#/components/schemas/UserDefinedDiscounts'
+    UserDefinedDiscount:
+      title: User Defined Discount
+      required:
+        - discount_type
+      type: object
+      description: Discounts that the user can use on an order, a type is required and the barcode can be optional.
+      additionalProperties: false
+      properties:
+        discount_type:
+          type: string
+          description: This will match an internal reference tag set up in Discounts.
+          example: vacation-club
+        barcode:
+          type: string
+          description: Used as an external identifier for discount validations.
+          example: 97801-45678-5678-6
+    UserDefinedDiscounts:
+      title: User Defined Discounts
+      type: array
+      description: List of user defined discounts
+      nullable: true
+      items:
+        $ref: '#/components/schemas/UserDefinedDiscount'
+    Vendor:
+      title: Vendor
+      type: object
+      description: "Vendor general information"
+      properties:
+        id:
+          type: string
+          description: "Vendor identifier"
+        name:
+          type: string
+          description: "Vendor Name"
+        additional_info:
+          type: string
+          description: "This maps to the 'Additional Info' field for the vendor role. It is used by Interact Web and other 3rd party applications to display vendor information"
+        alcohol_rule_set:
+          description: "Establishes alcohol sales restrictions"
+          $ref: '#/components/schemas/AlcoholRuleSet'
+        alcohol_enabled:
+          type: boolean
+          description: "Allows the sale of alcoholic products for the selected vendor"
+        bundle_count:
+          type: integer
+          description: "Documentation Forthcoming"
+        hours_of_operation_enabled:
+          type: boolean
+          description: "Lets the end user know if the vendor is open or closed"
+        custom_fees:
+          type: array
+          description: "Available set of custom fees"
+          items:
+            $ref: '#/components/schemas/CustomFee'
+        open_hours:
+          type: array
+          description: "This ties to the 'hours of operation' field up above. Return an object containing the configured hours of operation for the vendor when set.<br/>
+                        If not set, returns an empty array. Hours of operation are what it sounds like - the hours during the day that the vendor is open for orders. It is used to indicate whether the vendor is open or closed, instead of the vendor status of open / closed"
+          items:
+            $ref: '#/components/schemas/OpenHour'
+        order_capacity:
+          type: integer
+          description: "Documentation Forthcoming"
+        is_pickup_order:
+          type: boolean
+          description: "Defines if orders can be picked up at the vendor. In connect you can find it under mobile ordering option under the fiel Pickup Vendor"
+        pickup_location:
+          type: string
+          description: "Usually the location of the vendor/subvendor"
+        tax_rule_set:
+          $ref: '#/components/schemas/TaxRuleSet'
+          description: "Documentation Forthcoming"
+        tip_enabled:
+          type: boolean
+          description: "Indicates if a tip can be charged"
+        venue_id:
+          type: string
+          description: "Identifier for the venue that contains the current vendor"
+        open:
+          type: boolean
+          description: "Indicates if the vendor is open"
+        dayparts:
+          type: array
+          description: "Set of dayparts for the vendor"
+          items:
+            $ref: '#/components/schemas/DayPart'
+        payment_types:
+          type: array
+          description: "Vendor's available payment types"
+          items:
+            $ref: '#/components/schemas/PaymentType'
+        order_types:
+          type: array
+          description: "Returns all of the order types configured for the vendor, these are user configured values but typically are things like 'For Here' and 'To Go' or 'Delivery'"
+          items:
+            $ref: '#/components/schemas/OrderType'
+        vendor_role:
+          $ref: '#/components/schemas/VendorRole'
+        vendor_taxes:
+          type: array
+          items:
+            $ref: '#/components/schemas/VendorTax'
+        external_id:
+          type: string
+          description: "A field for clients to write the IDs of the items in their own systems. So if they have like an inventory system of their own, they can 'link' the information."
+        multi_level_modifiers:
+          type: boolean
+          description: "Specifies if the vendor is using new modifiers, which is a multi level/nested schema of modifiers. Nested modifiers are items composed by other items of the product catalog instead of standalone entities (edited)"
+        pos_categories:
+          type: array
+          items:
+            $ref: '#/components/schemas/POSCategory'
+        terminal_id:
+          type: string
+          description: "The account id of the account that is setup for the 'default mobile ordering account' inside the vendor - this is used by IW and others to communicate with other internal systems and to grab terminal role information for this vendor"
+        time_zone:
+          type: string
+          description: "Vendor's time zone"
+          example: "America/Los_Angeles"
+        vendor_integration_permissions:
+          type: array
+          items:
+            $ref: '#/components/schemas/VendorIntegrationPermission'
+        seat_confirmation_enabled:
+          type: boolean
+          description: "Indicates if the vendor requires the customer to confirm their selected seat before ordering"
+        image_url:
+          type: string
+          description: "URL of the vendor's configured image"
+        display_name:
+          type: string
+          description: "Display namefor the vendor"
+          example: "3554 World of Disney"
+        active_user:
+          description: "Contains basic user information based on the userID."
+          $ref: '#/components/schemas/StoreUser'
+        scan_to_add_to_cart:
+          type: boolean
+          description: "Enables or disables Scan & Go functionality in Interact Web based on Scan to Add to Cart Flag in Connect under Vendor Role - Mobile Ordering Transactions"
+        pickup_time_selection_enabled:
+          type: boolean
+          description: "Indicates if Order Ahead is enabled for this vendor"
+        pickup_times:
+          description: "A list of avaibale pick up times for the vendor. Then only pickup times that are later than current time + configured prep time will be considered valid"
+          type: array
+          items:
+            type: string
+            description: Represents Order Ahead available Time Slots in ISO8601 format
+            example: 2006-01-02T15:04:05-07:00
+        charity_rounding_types:
+          description: "Includes rounding details for charity rounding types only"
+          type: array
+          items:
+            $ref: '#/components/schemas/CharityRoundingType'
+        custom_fields:
+          type: array
+          items:
+            $ref: '#/components/schemas/CustomField'
+        hide_menu:
+          type: boolean
+          description: "Enables or disables hide menu in Interact Web based on Hide Menu in Connect under Vendor Role - Mobile Ordering Transactions. Scan to Add to Cart must be enabled in order 
+          to have access to this toggle"
+        seat_required:
+          type: boolean
+          description: "Indicates if the seat is required for a mobile ordering in a venue with Interact Web. This is in Connect under Settings - Mobile Ordering"
+    VendorsResponse:
+      title: Vendors Response
+      type: object
+      description: "Documentation Forthcoming"
+      properties:
+        vendors:
+          type: array
+          description: "Documentation Forthcoming"
+          items:
+            $ref: '#/components/schemas/Vendor'
+    CustomField:
+      title: Custom field
+      type: object
+      properties:
+        id:
+          type: string
+          description: id for the field
+          example: "22"
+        key:
+          type: string
+          example: "some key"
+        name:
+          type: string
+          example: "some name"
+        value:
+          type: string
+          example: "some value"
+        type:
+          type: string
+          example: "some type"
+        attributes:
+          type: string
+          example: '{"foo":"bar"}'
+        reference_id:
+          type: string
+          example: "123456789"
+    WizardStep:
+      title: Wizard Step
+      type: object
+      description: "In Connect, a wizard is a series of well defined steps to prepare an item. A wizard step is any given step of that series"
+      properties:
+        id:
+          type: string
+          description: "Unique identifier in Connect of the current wizard step"
+        title:
+          type: string
+          description: "Title or name of the current wizard step"
+        index:
+          type: integer
+          description: "Position in which this step should be blaced in the whole wizard process"
+        multiple_choice:
+          type: boolean
+          description: "Flag that indicates if the current wizard step allows the selection of multiple modifiers"
+        is_required:
+          type: boolean
+          description: "Flag that indicates if the current wizard step is required to order the item it belongs to"
+        enabled_max_min_modifiers:
+          type: boolean
+          description: "Flag that indicates if the current wizard step has minimum and maximum bounds for the number of modifiers that can be assigned"
+        cross_threshold:
+          type: boolean
+          description: "Flag that indicates if the threshold of modifiers can be crossed in the current wizard step"
+        additional_modifier_charge:
+          type: number
+          description: "How much will be charged for any modifier beyond the max"
+        min_modifiers:
+          type: integer
+          description: "Minimum number of modifiers that can be assigned in the current wizard step"
+        max_modifiers:
+          type: integer
+          description: "Maximum number of modifiers that can be assigned in the current wizard step"
+        modififers:
+          type: array
+          description: "Modifiers to be considered for a given wizard step."
+          items:
+            $ref: '#/components/schemas/Modifier'
+      example:
+        id: "123"
+        title: Would you like to modify your burger?
+        index: 0
+        multiple_choice: true
+        is_required: true
+        enabled_min_max_modifiers: true
+        cross_threshold: true
+        additional_modifier_charge: 0.99
+        min_modifiers: 2
+        max_modifiers: 6
+        modifiers:
+          - id: "123"
+            name: Mustard
+            display_name: Lots of Mustard
+            description: Yellow mustard
+            status: ACTIVE
+            sku: abc123
+            modifier_id: "5335"
+            image_url: mustard.jpg
+    RootMapNode:
+      title: Root Map Node
+      type: object
+      description: When working with composed modifiers, the root map node represents the main item to which modifiers will be associated. ***Only available in v2.***
+      properties:
+        id:
+          $ref: '#/components/schemas/BsonID'
+          description: "Unique internal Product Catalog identifier of the object"
+          example: "4dc0f47e-5beb-457a-9ec9-32a8f4aefc10"
+        template_id:
+          $ref: '#/components/schemas/BsonID'
+          description: "Unique internal Product Catalog identifier of the template map node being used as root map node"
+          example: "4dc0f47e-5beb-457a-9ec9-32a8f4aefc11"
+        item_id:
+          $ref: '#/components/schemas/ItemID'
+          description: "Unique internal Connect identifier of the item being used as root map node"
+          example: 12345
+        tags:
+          type: array
+          description: "Searchable tags. "
+          items:
+            type: string
+            description: "A string describing a tag used to search root map nodes when using Product Catalog service"
+          example: [ "food", "spicy" ]
+        sort_order:
+          type: integer
+          description: "Number indicating the sort order. Smaller numbers have higher priority. <br> If two objects have the same priority, then they are sorted alphabetically. <br> Every item with sort order defined has higher priority than those who don't have it."
+          example: 1
+        map_nodes:
+          type: array
+          description: "Array of other items related to the main (root) item as modifiers."
+          items:
+            $ref: '#/components/schemas/MapNode'
+        map_groups:
+          type: array
+          description: "A named group of additional MapNodes and/or MapGroups. "
+          items:
+            $ref: '#/components/schemas/MapGroup'
+        item_updated:
+          description: deprecated and this field will be removed in the future.
+          $ref: '#/components/schemas/EpochTime'
+        updated:
+          description: this field represents the actual modification time for the root map node
+          $ref: '#/components/schemas/EpochTime'
+        uuid:
+          type: string
+          format: uuid.v4
+          description: "Unique service generated UUID v4."
+          example: "4dc0f47e-5beb-457a-9ec9-32a8f4aefc10"
+        unique_id:
+          type: string
+          description: "Product Catalog internal ID for the item"
+          example: ""
+        external_id:
+          type: string
+          description: "Unique 3rd party identifier for an item. Used to keep item data consistent across Appetize and client systems."
+          example: "12345"
+        status:
+          type: string
+          description: this field represents the current status of the root map node RMN, it shows if the RMN is active or deleted (soft deleted)
+          example: ACTIVE
+          enum:
+            - ACTIVE
+            - DELETED
+    MapNode:
+      title: Map Node
+      type: object
+      description: "A map node is any item marked as **modifier** in Connect and that is currently associated to another item as modifier through a **map group**"
+      properties:
+        template_id:
+          $ref: '#/components/schemas/BsonID'
+          description: "Unique internal Product Catalog identifier of the template map node being used as root map node"
+          example: "4dc0f47e-5beb-457a-9ec9-32a8f4aefc11"
+        item_id:
+          $ref: '#/components/schemas/ItemID'
+          description: "Unique internal Connect identifier of the item being used as root map node"
+          example: "12345"
+        tags:
+          type: array
+          description: "Searchable tags. "
+          items:
+            type: string
+            description: "A string describing a tag used to search map nodes"
+          example: [ "food", "spicy" ]
+        uuid:
+          type: string
+          format: uuid.v4
+          description: 'a service generated UUID v4, intended for use by Activate'
+          example: "5ea0342f-fab3-447a-92e8-ed29055a6312"
+        unique_id:
+          type: string
+          description: "Product Catalog internal ID for the item"
+          example: ""
+        external_id:
+          type: string
+          description: "Unique 3rd party identifier for an item. Used to keep item data consistent across Appetize and client systems."
+          example: "552589"
+        map_nodes:
+          type: array
+          description: "Array of items that are currently associated to this item as modifiers through a **map group**"
+          example: [ ]
+        map_groups:
+          type: array
+          description: "Array of named / purposed groups of additional MapNodes and/or MapGroups"
+          items:
+            $ref: '#/components/schemas/MapGroupNested'
+        item_updated:
+          $ref: '#/components/schemas/EpochTime'
+    MapNodeNested:
+      title: Map Node
+      type: object
+      description: "A map node is any item marked as **modifier** in Connect and that is currently associated to another item as modifier through a **map group**"
+      properties:
+        template_id:
+          $ref: '#/components/schemas/BsonID'
+          description: "Unique internal Product Catalog identifier of the template map node being used as root map node"
+          example: "4dc0f47e-5beb-457a-9ec9-32a8f4aefc11"
+        item_id:
+          $ref: '#/components/schemas/ItemID'
+          description: "Unique internal Connect identifier of the item being used as root map node"
+          example: "12345"
+        tags:
+          type: array
+          description: "Searchable tags. "
+          items:
+            type: string
+            description: "A string describing a tag used to search map nodes"
+          example: [ "food", "spicy" ]
+        uuid:
+          type: string
+          format: uuid.v4
+          description: 'a service generated UUID v4, intended for use by Activate'
+          example: "5ea0342f-fab3-447a-92e8-ed29055a6312"
+        unique_id:
+          type: string
+          description: "Product Catalog internal ID for the item"
+          example: ""
+        external_id:
+          type: string
+          description: "Unique 3rd party identifier for an item. Used to keep item data consistent across Appetize and client systems."
+          example: "552589"
+        map_nodes:
+          type: array
+          description: "Array of items that are currently associated to this item as modifiers through a **map group**"
+          example: [ ]
+        map_groups:
+          type: array
+          description: "Array of named / purposed groups of additional MapNodes and/or MapGroups"
+        item_updated:
+          $ref: '#/components/schemas/EpochTime'
+    MapGroup:
+      title: Map Group
+      type: object
+      description: "A named group of additional MapNodes and/or MapGroups."
+      properties:
+        name:
+          type: string
+          example: "Accesories"
+          description: 'name for use in CoreAPI or Connect UI'
+        tags:
+          type: array
+          description: "A string describing a tag used to search map nodes "
+          items:
+            type: string
+          example: [ "connect-ui" ]
+        sort_order:
+          type: integer
+          description: "Number indicating the sort order. Smaller numbers have higher priority. <br> If two objects have the same priority, then they are sorted alphabetically. <br> Every item with sort order defined has higher priority than those who don't have it."
+          example: 1
+        type:
+          $ref: '#/components/schemas/MapGroupType'
+          description: "Type of the map group. References Map Group Type"
+        rules:
+          $ref: '#/components/schemas/GroupRules'
+          description: "Rules for the map group. References Group Rules"
+        map_groups:
+          type: array
+          description: "Array of named / purposed groups of additional MapNodes and/or MapGroups"
+        map_nodes:
+          type: array
+          description: "Array of items that are currently associated to this item as modifiers through a **map group**"
+          items:
+            $ref: '#/components/schemas/MapNodeNested'
+          example: [ ]
+        uuid:
+          type: string
+          format: uuid.v4
+          description: 'a service generated UUID v4, intended for use by Activate'
+          example: "3487829f-8a89-4ea8-9585-9e37d72e9091"
+        template_id:
+          $ref: '#/components/schemas/BsonID'
+          description: "Unique internal Product Catalog identifier of the template map node being used as root map node"
+          example: "4dc0f47e-5beb-457a-9ec9-32a8f4aefc11"
+        unique_id:
+          type: string
+          description: "Product Catalog internal ID for the item"
+          example: ""
+        external_id:
+          type: string
+          description: "Unique 3rd party identifier for an item. Used to keep item data consistent across Appetize and client systems."
+          example: "12345"
+        display_name:
+          $ref: '#/components/schemas/MultiText'
+          description: 'localized name'
+        interact_display_name:
+          $ref: '#/components/schemas/MultiText'
+          description: 'localized name for Interact Web'
+        sales_channels:
+          type: array
+          description: Sales channels associated with this ItemSet/MapGroup.  If omitted, defaults to ALL
+          items:
+            $ref: '#/components/schemas/SalesChannel'
+    MapGroupNested:
+      title: Map Group
+      type: object
+      description: "A named group of additional MapNodes and/or MapGroups."
+      properties:
+        name:
+          type: string
+          example: "Accesories"
+          description: 'name for use in CoreAPI or Connect UI'
+        tags:
+          type: array
+          description: "A string describing a tag used to search map nodes "
+          items:
+            type: string
+          example: [ "connect-ui" ]
+        sort_order:
+          type: integer
+          description: "Number indicating the sort order. Smaller numbers have higher priority. <br> If two objects have the same priority, then they are sorted alphabetically. <br> Every item with sort order defined has higher priority than those who don't have it."
+          example: 1 
+        type:
+          $ref: '#/components/schemas/MapGroupType'
+          description: "Type of the map group. References Map Group Type"
+        rules:
+          $ref: '#/components/schemas/GroupRules'
+          description: "Rules for the map group. References Group Rules"
+        map_nodes:
+          type: array
+          description: "Array of items that are currently associated to this item as modifiers through a **map group**"
+          example: [ ]
+        map_groups:
+          type: array
+          description: "Array of named / purposed groups of additional MapNodes and/or MapGroups"
+        uuid:
+          type: string
+          format: uuid.v4
+          description: 'a service generated UUID v4, intended for use by Activate'
+          example: "3487829f-8a89-4ea8-9585-9e37d72e9091"
+        template_id:
+          $ref: '#/components/schemas/BsonID'
+          description: "Unique internal Product Catalog identifier of the template map node being used as root map node"
+          example: "4dc0f47e-5beb-457a-9ec9-32a8f4aefc11"
+        unique_id:
+          type: string
+          description: "Product Catalog internal ID for the item"
+          example: ""
+        external_id:
+          type: string
+          description: "Unique 3rd party identifier for an item. Used to keep item data consistent across Appetize and client systems."
+          example: "12345"
+        display_name:
+          $ref: '#/components/schemas/MultiText'
+          description: 'localized name'
+        interact_display_name:
+          $ref: '#/components/schemas/MultiText'
+          description: 'localized name for Interact Web'
+        sales_channels:
+          type: array
+          description: Sales channels associated with this ItemSet/MapGroup.  If omitted, defaults to ALL
+          items:
+            $ref: '#/components/schemas/SalesChannel'
+    MapGroupType:
+      title: Map Group Type
+      type: string
+      description: "Describes the type a map group can have.
+
+      - Set: Group of modifiers planned for use in an item/modifier (can only contain Modifiers)
+
+      - Category: *Deprecated*
+
+      - Instruction: Group of instructions available for selection with an item/modifier (can only contain Instructions)
+
+      - Additional: Group of modifiers that can optionally be added to an item/modifier (can only contain Modifiers)"
+      enum:
+        - GROUP_SET
+        - GROUP_CATEGORY
+        - GROUP_INSTRUCTION
+        - GROUP_ADDITIONAL
+    EpochTime:
+      title: Epoch Time
+      type: string
+      description: epoch time in milliseconds.
+      example: "1585164084"
+    SalesChannel:
+      title: Sales Channel
+      default: ALL
+      type: string
+      description: "Sales channel where an item is available to purchase. <br/> Possible values:
+
+      - All: Available in all channel
+
+      - POS: Point of sales
+
+      - Kiosk: Interact Kios
+
+      - Mobile: Phone apps"
+      enum:
+        - ALL
+        - POS
+        - KIOSK
+        - MOBILE
+    MultiText:
+      title: Multi Text
+      type: object
+      description: 'localized group name data intended for use by Activate and Interact'
+      example:
+        en-us: A string In English
+        fr: Une chaine en Francais
+      additionalProperties:
+        type: object
+        properties:
+          code:
+            type: string
+            example: "en_us"
+          text:
+            type: string
+            example: "Mashed potatoes"
+    GroupRules:
+      title: Group Rules
+      type: object
+      description: "Descriptors of Product Catalog data.  They tell how the ItemSet should be displayed by the Client, and also the rules for its immediate child nodes"
+      properties:
+        show_description:
+          $ref: '#/components/schemas/GroupRuleShowDescription'
+        count:
+          $ref: '#/components/schemas/GroupRuleCount'
+        display_type:
+          $ref: '#/components/schemas/GroupRuleDisplayType'
+        default_mode:
+          $ref: '#/components/schemas/GroupRuleDefaultMode'
+        hidden_label:
+          $ref: '#/components/schemas/GroupRuleHiddenLabel'
+        fixed_item_selection:
+          $ref: '#/components/schemas/GroupRuleFixedItemSelection'
+        node_rules:
+          type: object
+          description: "Documentation Forthcoming"
+          properties:
+            <item_id>:
+              $ref: '#/components/schemas/MapNodeRules'
+          example:
+            "1378264": {
+              "count": {
+                "minimum": 1,
+                "maximum": 1
+              },
+              "default": {
+                "value": false
+              },
+              "pricing_mode": {
+                "mode": "ADD_PRICE_TO_ORDER"
+              },
+              "increases_max": {
+                "value": true
+              },
+              "exceed_max": {
+                "value": false
+              },
+              "exceed_max_price": {
+                "amount": 0
+              },
+              "appearance": {
+                "value": "VISIBLE"
+              },
+              "sort_order": {
+                "value": 0
+              }
+            }
+    GroupRuleShowDescription:
+      title: Group Rule Show Description
+      type: object
+      description: "Show Description for Group; Text supports localization, text['en-us']='English Text'"
+      required:
+        - text
+      properties:
+        text:
+          $ref: '#/components/schemas/MultiText'
+    GroupRuleCount:
+      title: Group Rule Count
+      type: object
+      description: "Indicates the maximum and minimum number of elements of the group that can be included with each group parent."
+      properties:
+        minimum:
+          type: number
+          description: "Lower bound"
+          example: 1.0
+        maximum:
+          type: number
+          description: "Upper bound"
+          example: 1.0
+    GroupRuleDisplayType:
+      title: Group Rule Display Type
+      type: object
+      description: "
+        Display type determines how Item Sets appear on Interact X (IX). By default is set to **Expanded**.<br/>Possible values are:
+
+        - Expanded: Item Set and all its content appears visible when IX first displays the item details screen
+
+        - Collapsed individually: Item Set and all its content appears collapsed when IX first displays the item details screen. User has to expand each item set individually by clicking the arrow button beside the item set name
+
+        - Collapsed as group: All Item Sets flagged with this option at the same level will appear collapsed when IX first displays the item details screen (as one group). IX adopts the name from the item set with the lowest sort order on the UI. User has to expand all item sets as a group by clicking the arrow button beside the item set name."
+      properties:
+        value:
+          type: string
+          default: EXPANDED
+          description: "One of the values described above"
+          enum:
+            - EXPANDED
+            - COLLAPSED_INDIVIDUALLY
+            - COLLAPSED_AS_GROUP
+    GroupRuleDefaultMode:
+      title: Group Rule Default Mode
+      type: object
+      description: "Default Mode indicates how Activate will display an Item Set by default.<br/>Possible values are:
+
+          - Show Selections: Only display selected modifiers in the cart, receipt, etc., do not display deselected modifiers.
+
+          - Show Adjustments: Only display modifiers in which there is an adjustment (deselected default, increased quantity) or if it has a price."
+      properties:
+        value:
+          type: string
+          description: "One of the strings described above."
+          default: SHOW_SELECTIONS
+          enum:
+            - SHOW_SELECTIONS
+            - SHOW_ADJUSTMENTS
+    GroupRuleHiddenLabel:
+      title: Group Rule Hidden Label
+      type: object
+      description: "Text that Interact will display inside an item set, when it contains hidden items "
+      properties:
+        text:
+          $ref: '#/components/schemas/MultiText'
+    GroupRuleFixedItemSelection:
+      title: Group Rule Fixed Item Selection
+      type: object
+      description: "Value that describes if whether or not an item-set selection is fixed "
+      properties:
+        value:
+          type: boolean
+          example: true
+    MapNodeRules:
+      title: Map Node Rules
+      type: object
+      properties:
+        pricing_mode:
+          description: "Pricing mode describes how the modifier item cost should be charged"
+          $ref: '#/components/schemas/NodeRulePricingMode'
+        count:
+          description: "Indicates the maximum and minimum number of elements of the group that can be included with each group parent."
+          $ref: '#/components/schemas/NodeRuleCount'
+        default:
+          $ref: '#/components/schemas/NodeRuleDefault'
+        increases_max:
+          $ref: '#/components/schemas/NodeRuleIncreasesMax'
+        exceed_max:
+          $ref: '#/components/schemas/NodeRuleExceedMax'
+        exceed_max_price:
+          $ref: '#/components/schemas/NodeRuleExceedMaxPrice'
+        appearance:
+          $ref: '#/components/schemas/NodeRuleAppearance'
+        sort_order:
+          $ref: '#/components/schemas/NodeRuleSortOrder'
+    NodeRulePricingMode:
+      title: Node Rule Pricing Mode
+      type: object
+      description: "Describes how modifier cost should be charged.<br/>Possible values are:
+
+        - Add price to order: Adds modifier cost directly to order total. Doesn't affect item cost calculation but affects cart subtotal.
+
+        - Include in parent price: Modifier cost is included into parent cost. Generally does not affect subtotal.
+
+        - Increase parent price: Modifier cost increases parent cost. Will affect both, item cost calculation and order subtotal."
+      required:
+        - mode
+      properties:
+        mode:
+          type: string
+          description: "One of the values described above"
+          enum:
+            - 'ADD_PRICE_TO_ORDER'
+            - 'INCLUDED_IN_PARENT_PRICE'
+            - 'INCREASES_PARENT_PRICE'
+          example: ADD_PRICE_TO_ORDER
+    NodeRuleCount:
+      title: Node Rule Count
+      type: object
+      description: "Indicates the maximum and minimum number of elements of the group that can be included with each group parent."
+      properties:
+        minimum:
+          type: number
+          description: "Lower bound"
+          example: 1
+        maximum:
+          type: number
+          description: "Upper bound"
+          example: 1
+        default:
+          type: number
+          description: "Default count value"
+          example: 1
+    NodeRuleDefault:
+      title: Node Rule Default
+      type: object
+      description: "Defines if the modifier is preselected within this item map."
+      properties:
+        value:
+          type: boolean
+          example: true
+    NodeRuleIncreasesMax:
+      title: Node Rule Increases Max
+      type: object
+      description: "Defines if the modifier counts towards the limits in the set. "
+      properties:
+        value:
+          type: boolean
+          example: true
+    NodeRuleExceedMax:
+      title: Node Rule Exceed Max
+      type: object
+      description: "Defines if the modifier can be selected to exceed the limit on the set"
+      properties:
+        value:
+          type: boolean
+          example: true
+    NodeRuleExceedMaxPrice:
+      title: Node Rule Exceed Max Price
+      type: object
+      description: "Cost that each unit of the modifier will have when beyond the max."
+      properties:
+        amount:
+          type: number
+          example: 10
+    NodeRuleSortOrder:
+      title: Node Rule Sort Order
+      type: object
+      description: "Number indicating the sort order. Smaller numbers have higher priority. <br> If two objects have the same priority, then they are sorted alphabetically. <br> Every item with sort order defined has higher priority than those who don't have it."
+      properties:
+        value:
+          type: number
+          example: 1
+          description: "Number indicating the sort order"
+    NodeRuleAppearance:
+      title: Node Rule Appearance
+      type: object
+      description: "Describes the visibility of the node map.<br/>Possible values are:
+
+          - Visible: The modifier shows in its regular menu placement
+
+          - Hidden: The modifier is hidden from the UI
+
+          - Featured: The modifier is in the featured/highlighted section of the menu"
+      properties:
+        value:
+          type: string
+          description: "One of the values described above"
+          default: VISIBLE
+          example: VISIBLE
+          enum:
+            - VISIBLE
+            - HIDDEN
+            - FEATURED
+    AplSessionTokenRequest:
+      title: APL Cloud Session Token Request
+      type: object
+      required:
+        - terminal_id
+        - amount
+      properties:
+        terminal_id:
+          type: string
+          example: "151922"
+          description: Terminal ID (for which existing configuration under gateway credentials)
+        amount:
+          type: string
+          example: "5.99"
+        payment_type:
+          type: string
+          enum:
+            - CreditCard
+            - CardOnFile
+            - ApplePay
+            - GooglePay
+            - Paypal
+          example: CreditCard
+        gateway:
+          type: string
+          example: FreedomPay
+          description: Can be "Elavon, FreedomPay"
+        freedom_pay_hpc:
+          $ref: '#/components/schemas/FreedomPayHpc'
+    FreedomPayHpc:
+      type: object
+      properties:
+        credit_card:
+          $ref: '#/components/schemas/CreditCard'
+        apple_pay:
+          $ref: '#/components/schemas/ApplePay'
+        google_pay:
+          $ref: '#/components/schemas/GooglePay'
+        paypal:
+          $ref: '#/components/schemas/Paypal'
+    CreditCard:
+      type: object
+      properties:
+        button_type:
+          type: integer
+          example: 1
+          description: Can be a number between 1 and 7
+        card_icon_display_type:
+          type: integer
+          example: 1
+          description: Can be a number between 1 and 3
+        card_number:
+          $ref: '#/components/schemas/CreditCardSimpleCode'
+        culture_code:
+          type: string
+          example: "en-US"
+        expiration_date:
+          $ref: '#/components/schemas/CreditCardCode'
+        postal_code:
+          $ref: '#/components/schemas/CreditCardCode'
+        security_code:
+          $ref: '#/components/schemas/CreditCardCode'
+        styles:
+          type: string
+          example: ".exampleStyle{padding:10px;}#exampleStyle2{margin:5rem;}"
+        validation_message_type:
+          type: integer
+          example: 1
+          description: Can be a number between 1 and 3
+        workflow_type:
+          type: integer
+          example: 1
+          description: Can be a number between 1 and 2
+    CreditCardSimpleCode:
+      type: object
+      properties:
+        label_type:
+          type: integer
+          example: 1
+        placeholder_type:
+          type: integer
+          example: 1
+    CreditCardCode:
+      type: object
+      properties:
+        label_type:
+          type: integer
+          example: 1
+        placeholder_type:
+          type: integer
+          example: 1
+        validation_type:
+          type: integer
+          example: 1
+    ApplePay:
+      type: object
+      properties:
+        button_type:
+          type: integer
+          example: 1
+        button_color:
+          type: integer
+          example: 1
+        styles:
+          type: string
+          example: ".exampleStyle{padding:10px;}#exampleStyle2{margin:5rem;}"
+        response_type:
+          type: integer
+          example: 1
+        auto_finalize_payment:
+          type: boolean
+          example: true
+    GooglePay:
+      type: object
+      properties:
+        button_type:
+          type: integer
+          example: 1
+        button_color:
+          type: integer
+          example: 1
+        billing_address:
+          $ref: '#/components/schemas/BillingAddress'
+        is_email_required:
+          type: boolean
+          example: false
+        response_type:
+          type: integer
+          example: 1
+    Paypal:
+      type: object
+      required:
+        - invoice_number
+      properties:
+        currency_code:
+          type: string
+        intent:
+          type: integer
+          example: 1
+        invoice_number:
+          type: integer
+          example: 12345
+          description: "Only used by Paypal, generated by Appetize"
+    BillingAddress:
+      type: object
+      properties:
+        format:
+          type: integer
+          example: 1
+        is_phone_number_required:
+          type: integer
+          example: 1
+        is_required:
+          type: boolean
+          example: true
+    AplSessionTokenResponse:
+      type: object
+      properties:
+        session_token:
+          type: string
+          example: "abC0eXAiOiJKV1QiLCJhbGciOiJIU"
+        timestamp:
+          type: string
+          example: "2019-06-26T04:47:55.196Z"
+        iframe:
+          type: string
+          example: '<iframe frameborder="0" scrolling="no" src="https://hpc.uat.freedompay.com/api/v1.5/controls?sessionKey=eyJhbGciOiJBMjU2R0NNS1ciLCJlbmMiOiJBMjU2Q0JDLUhTNTEyIiwiaXYiOiIxbDVUdkRSYTVmc0QzaW8yIiwidGFnIjoibG5SZmVVaWhFR2tHRVR4QzUyc1A3USIsInppcCI6IkRFRiJ9.zWyZFQdEtQBUjFatWox4pnWWFGSEs-dmXSftN6IDKB5DysbPhXTJftCy8gEgbQvIoBdKgGGlLYc9EbJOqRtiVA.3hzb6z0ySfe7PuRaEQ-wxQ.oeFjdim6h11jxvog2GKt91zc4uVD0YETsujjJzrZzr8LN5JhfdZIkUHOyqtiHCExQJZJSqA6dYhOsU_qzDtOpuXxOFfmKK4D2cO04YGUPIG29FF-2DV4m1f-myhA24LbMub-lHPg2oN7ENUR9d0ybgAGC8i2VKb_r6lEZgAaxuSCEkO1pKrRJ15NRZbEjuEjc5xpxTEm44tjZB-miQ0ATOG8pildmLy0vSFfsmYqeQsaWky_CRPVSF81ZXzpsr5_ogbjJxvmus3uk3nvW8uZHSxAJT1S5nFy65bCM2vEHgX8d2eykScr6F1Chv2SVeqk7yH0dDAWXDPPgIq9-i5MrxAVXjQArXabJlcdkg-hXUsEB95qgFLu3jvDpQNFOvAz_ytq7T2Wz9YcBcb8DBSJEn18AAnBuoyV6qs0yDP1Gwasl-SXu2em7E_lQqfMGCgpaOuAPH2D7ix3_TQL5oWr3OGUIqpftX0SeVV1m452n0gE6uGeA00sB4ZA6QvsPt_n.vY41IhVSzBW9x-6cq9HwP5cn6PPqj09qlAoFP48A4bY"></iframe>'
+    AplPaymentRequest:
+      type: object
+      required:
+        - session_key
+      properties:
+        session_key:
+          type: string
+          example: "eyJhbGciOiJBMjU2R0NNS1ciLCJlbmMiOiJBMjU2Q0JDLUhTNTEyIiwiaXYiOiIxbDVUdkRSYTVmc0QzaW8yIiwidGFnIjoibG5SZmVVaWhFR2tHRVR4QzUyc1A3USIsInppcCI6IkRFRiJ9.zWyZFQdEtQBUjFatWox4pnWWFGSEs-dmXSftN6IDKB5DysbPhXTJftCy8gEgbQvIoBdKgGGlLYc9EbJOqRtiVA.3hzb6z0ySfe7PuRaEQ-wxQ.oeFjdim6h11jxvog2GKt91zc4uVD0YETsujjJzrZzr8LN5JhfdZIkUHOyqtiHCExQJZJSqA6dYhOsU_qzDtOpuXxOFfmKK4D2cO04YGUPIG29FF-2DV4m1f-myhA24LbMub-lHPg2oN7ENUR9d0ybgAGC8i2VKb_r6lEZgAaxuSCEkO1pKrRJ15NRZbEjuEjc5xpxTEm44tjZB-miQ0ATOG8pildmLy0vSFfsmYqeQsaWky_CRPVSF81ZXzpsr5_ogbjJxvmus3uk3nvW8uZHSxAJT1S5nFy65bCM2vEHgX8d2eykScr6F1Chv2SVeqk7yH0dDAWXDPPgIq9-i5MrxAVXjQArXabJlcdkg-hXUsEB95qgFLu3jvDpQNFOvAz_ytq7T2Wz9YcBcb8DBSJEn18AAnBuoyV6qs0yDP1Gwasl-SXu2em7E_lQqfMGCgpaOuAPH2D7ix3_TQL5oWr3OGUIqpftX0SeVV1m452n0gE6uGeA00sB4ZA6QvsPt_n.vY41IhVSzBW9x-6cq9HwP5cn6PPqj09qlAoFP48A4bY"
+          description: obtained from AplSessionTokenResponse iframe
+        freedom_pay:
+          type: object
+          required:
+            - terminal_id
+            - token_information
+          properties:
+            terminal_id:
+              type: string
+              example: "151922"
+              description: Terminal ID (for which there's a configuration under gateway credentials), required for creating PosSyncId
+            payment_key:
+              type: string
+              example: "19d22def-a77e-4a60-a718-428577738864"
+              description: returned once the payment/submit button inside iframe has been clicked
+            token_information:
+              $ref: '#/components/schemas/PaymentTokenInformation'
+            card:
+              $ref: '#/components/schemas/PaymentCard'
+            purchase_totals:
+              $ref: '#/components/schemas/PaymentPurchaseTotals'
+            invoice_header:
+              $ref: '#/components/schemas/PaymentInvoiceHeader'
+            ship_from:
+              $ref: '#/components/schemas/PaymentShipFrom'
+            ship_to:
+              $ref: '#/components/schemas/PaymentShipTo'
+            items:
+              type: array
+              items:
+                $ref: '#/components/schemas/PaymentItem'
+            client_meta_data:
+              $ref: '#/components/schemas/PaymentClientMetaData'
+            pos:
+              $ref: '#/components/schemas/PaymentPos'
+            apple_pay:
+              $ref: '#/components/schemas/PaymentApplePay'
+            token_create_service:
+              $ref: '#/components/schemas/PaymentTokenCreateService'
+    PaymentTokenInformation:
+      type: object
+      properties:
+        expiration_month:
+          type: integer
+          example: 01
+        expiration_year:
+          type: integer
+          example: 2021
+        token:
+          type: string
+          example: "abc123"
+    PaymentCard:
+      type: object
+      properties:
+        name_on_card:
+          type: string
+          example: "Jane Smith"
+          maxLength: 35
+          description: Level 2/3 data - Name of card holder
+        card_type:
+          type: string
+          example: "credit"
+          maxLength: 35
+          description: Level 2/3 data - Denotes the rail in which a payment was processed i.e. debit, credit, cashless, token, stored value, Apple Pay, GooglePay
+    PaymentPurchaseTotals:
+      type: object
+      required:
+        - charge_amount
+      properties:
+        charge_amount:
+          type: number
+          example: 9.99
+          description: Level 2 data - Tender amount, may be different than the actual grand total
+        tax_total:
+          type: number
+          example: 9.99
+          description: Level 2 data - Total amount of tax applied to the ticket
+        discount_total:
+          type: number
+          example: 9.99
+          description: Level 2 data - Total discounted amount from purchase
+    PaymentInvoiceHeader:
+      type: object
+      properties:
+        purchaser_code:
+          type: string
+          example: "abc123"
+          description: Level 2 data - Customer identifier
+    PaymentShipFrom:
+      type: object
+      properties:
+        postal_code:
+          type: string
+          example: "12345"
+          minLength: 4
+          maxLength: 9
+          description: Level 2 data - Postal Code of shipFrom information. Must have spaces and hyphens removed.
+    PaymentShipTo:
+      type: object
+      properties:
+        postal_code:
+          type: string
+          example: "12345"
+          minLength: 4
+          maxLength: 9
+          description: Level 2 data - Postal Code of shipTo information. Must have spaces and hyphens removed.
+        country:
+          type: string
+          example: "US"
+          minLength: 2
+          maxLength: 3
+          description: Level 2 data - Country of shipTo information. Any ISO-3166 2- letter, 3-letter, or 3-digit code
+    PaymentItem:
+      type: object
+      properties:
+        product_sku:
+          type: string
+          example: "12345"
+          maxLength: 30
+          description: Level 3 data - SKU assigned to the product
+        product_name:
+          type: string
+          example: "Product Name"
+          maxLength: 35
+          description: Level 3 data - Name of the product
+        product_description:
+          type: string
+          example: "Product description..."
+          maxLength: 40
+          description: Level 3 data - Description of the product
+        unit_price:
+          type: number
+          example: 9.99
+          description: Level 3 data - Price per unit of the item
+        quantity:
+          type: number
+          example: 1
+          description: Level 3 data - Quantity of item purchased
+        total_amount:
+          type: number
+          example: 9.99
+          description: Level 3 data - Total amount of item (unit price x quantity), after discounts (use origTotalAmount and origUnitPrice if discounts are applied)
+        tax_included_flag:
+          type: string
+          example: "N"
+          description: Level 3 data - Used to determine if the tax was applied to the total amount. 'Y' if totalAmount includes taxAmount. 'N' if totalAmount does not include taxAmount. Default is 'N' if not specified.
+        tax_amount:
+          type: number
+          example: 9.99
+          description: Level 3 data - Total amount of tax applicable to the item
+        unit_of_measure:
+          type: string
+          example: "abc"
+          maxLength: 3
+          description: Level 3 data - Unit of measure for the item. See FreeWay Specification for full list 'Appendix L - Unit Of Measure Table'.
+        sale_code:
+          type: string
+          example: "S"
+          description: Level 3 data - General sales code for item. 'S' for Sale. 'R' for Return. 'L' for Lease/Rental.
+    PaymentClientMetaData:
+      type: object
+      required:
+        - application_name
+        - application_version
+        - selling_middleware_name
+      properties:
+        application_name:
+          type: string
+          example: "InteractWeb"
+          maxLength: 35
+          description: Level 2/3 data - The system conducting the sale (POS, PMS, ecom website, etc)
+        application_version:
+          type: string
+          example: "3.2.0"
+          maxLength: 35
+          description: Level 2/3 data - Version ID of the POS Application
+        selling_middleware_name:
+          type: string
+          example: "HPC"
+          maxLength: 35
+          description: Level 2/3 data - The intermediate middleware between the POS/etc and FreedomPay's application (FCC, HPC, etc), if any.
+        selling_middleware_version:
+          type: string
+          example: "1.4"
+          maxLength: 35
+          description: Level 2/3 data - The version of the middleware.
+    PaymentPos:
+      type: object
+      properties:
+        card_present:
+          type: string
+          example: "N"
+          description: Level 2/3 data - indicates if cart is present.
+        entry_mode:
+          type: string
+          example: "NFC"
+          maxLength: 35
+          description: Level 2/3 data - Denotes the way in which a payment terminal was engaged i.e. swiped, NFC.
+        enc_mode:
+          type: string
+          example: "string"
+          description: Level 2/3 data - Shows Apple Wallet and Google Wallet from in app transactions.
+        msr_type:
+          type: string
+          example: "applepay"
+          description: Level 2/3 data.
+        tracke:
+          type: object
+          example: "{\"version\":\"EC_v1\",\"data\":\"UEQXal(...)ad4759\"}}"
+          description: Level 2/3 data.
+    PaymentApplePay:
+      type: object
+      properties:
+        billing_contact:
+          $ref: '#/components/schemas/PaymentApplePayBillingContact'
+        shipping_contact:
+          $ref: '#/components/schemas/PaymentApplePayShippingContact'
+        token:
+          $ref: '#/components/schemas/PaymentApplePayToken'
+    PaymentApplePayBillingContact:
+      type: object
+      properties:
+        address_lines:
+          type: array
+          items:
+            type: string
+            example: "2929 Walnut St"
+        administrative_area:
+          type: string
+          example: "PA"
+        country:
+          type: string
+          example: "United States"
+        country_code:
+          type: string
+          example: "US"
+        family_name:
+          type: string
+          example: "Pay"
+        given_name:
+          type: string
+          example: "Freedom"
+        locality:
+          type: string
+          example: "Philadelphia"
+        phonetic_family_name:
+          type: string
+          example: ""
+        phonetic_given_name:
+          type: string
+          example: ""
+        postal_code:
+          type: string
+          example: "19104"
+        sub_administrative_area:
+          type: string
+          example: ""
+        sub_locality:
+          type: string
+          example: ""
+    PaymentApplePayShippingContact:
+      type: object
+      properties:
+        address_lines:
+          type: array
+          items:
+            type: string
+            example: "2929 Walnut St"
+        administrative_area:
+          type: string
+          example: "PA"
+        country:
+          type: string
+          example: "United States"
+        country_code:
+          type: string
+          example: "US"
+        email_address:
+          type: string
+          example: "freedompay@gmail.com"
+        family_name:
+          type: string
+          example: "Pay"
+        given_name:
+          type: string
+          example: "Freedom"
+        locality:
+          type: string
+          example: "Philadelphia"
+        phone_number:
+          type: string
+          example: "123456789"
+        phonetic_family_name:
+          type: string
+          example: ""
+        phonetic_given_name:
+          type: string
+          example: ""
+        postal_code:
+          type: string
+          example: "19104"
+        sub_administrative_area:
+          type: string
+          example: ""
+        sub_locality:
+          type: string
+          example: ""
+    PaymentApplePayToken:
+      type: object
+      properties:
+        payment_data:
+          type: string
+        payment_method:
+          type: string
+        transaction_identifier:
+          type: string
+          example: "xxxx"
+    PaymentTokenCreateService:
+      type: object
+      properties:
+        run:
+          type: boolean
+          example: true
+        type:
+          type: integer
+          format: int32
+          example: "7"
+    AplPaymentResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "xxx"
+    AplQueryTokenRequest:
+      type: object
+      required:
+        - terminal_id
+        - token
+      properties:
+        terminal_id:
+          type: string
+          example: "929"
+        token:
+          type: string
+          example: "5866414822101478"
+    AplQueryTokenResponse:
+      type: object
+      properties:
+        customer:
+          $ref: '#/components/schemas/QueryTokenCustomer'
+        address:
+          $ref: '#/components/schemas/QueryTokenAddress'
+        contact:
+          $ref: '#/components/schemas/QueryTokenContact'
+        card_data:
+          $ref: '#/components/schemas/QueryTokenCardData'
+        token_info:
+          $ref: '#/components/schemas/QueryTokenTokenInfo'
+        transaction_info:
+          $ref: '#/components/schemas/QueryTokenTransactionInfo'
+    QueryTokenCustomer:
+      type: object
+      properties:
+        customer_id:
+          type: string
+          example: "1234567"
+        first_name:
+          type: string
+          example: "John"
+        last_name:
+          type: string
+          example: "Doe"
+        description:
+          type: string
+          example: "Some description"
+    QueryTokenAddress:
+      type: object
+      properties:
+        address:
+          type: string
+          example: "224 A, Golf Course Road, Gurgaon"
+        address2:
+          type: string
+          example: "Houston, TX , KA 560043"
+        zip:
+          type: string
+          example: "12345"
+        city:
+          type: string
+          example: "Seattle"
+        state:
+          type: string
+          example: "Washington"
+        country:
+          type: string
+          example: "US"
+    QueryTokenContact:
+      type: object
+      properties:
+        company:
+          type: string
+          example: "Appetize"
+        phone:
+          type: string
+          example: "123456789"
+        email:
+          type: string
+          example: "user@example.com"
+    QueryTokenCardData:
+      type: object
+      properties:
+        exp_date:
+          type: string
+          example: "1122"
+        card_type:
+          type: string
+          example: "MC"
+        account_number:
+          type: string
+          example: "5204********1471"
+    QueryTokenTokenInfo:
+      type: object
+      properties:
+        token:
+          type: string
+          example: "5866414822101478"
+        token_response:
+          type: string
+          example: "SUCCESS"
+        token_provider:
+          type: string
+          example: "P"
+        token_format:
+          type: string
+          example: "Universal"
+    QueryTokenTransactionInfo:
+      type: object
+      properties:
+        user_id:
+          type: string
+          example: "userid"
+        result:
+          type: string
+          example: "0"
+
+    # Refund schemas
+    ErrorWithDetails:
+      type: object
+      required:
+        - message
+      properties:
+        code:
+          type: integer
+          example: 500
+        message:
+          type: string
+          example: "Internal error"
+        details:
+          type: string
+          example: "something happened please contact administrator"
+    RefundRequest:
+      type: object
+      required:
+        - reason
+      properties:
+        reason:
+          type: object
+          required:
+            - name
+            - code
+          properties:
+            name:
+              type: string
+              example: "Wrong Product"
+            code:
+              type: string
+              example: "RWP"
+        active_user:
+          type: object
+          properties:
+            id:
+              type: string
+              example: "199"
+            login:
+              type: string
+              example: "jhondoe@mail.com"
+    RefundedOrder:
+      type: object
+      properties:
+        order_id:
+          description: "ID generated by Connect"
+          type: integer
+          format: int32
+          example: 38002
+        device_order_id:
+          description: "ID generated by client, like by AX or OAPI"
+          type: string
+          example: "AX00000111"
+        venue_id:
+          description: "Connect-assigned venue ID"
+          type: integer
+          example: 1371
+        vendor_id:
+          description: "Connect-assigned vendor ID"
+          type: integer
+          example: 865
+        status:
+          description: "Connect Status. All Orders related to refund will have the same status of completed. Showing now to prepare for potential future statuses. "
+          type: string
+          enum: [ COMPLETED, REFUND_PROCESSING, PARTIAL_REFUND, REFUNDED, REFUND_PROCESSED, PENDING ]
+          example: "COMPLETED"
+        source:
+          description: "Where the order was created"
+          type: string
+          enum: [ activate, connect, oapi ]
+          example: "oapi"
+        amount:
+          description: "Order amount"
+          type: string
+          example: "13.00"
+        create_date:
+          description: "Pulled from Connect device order time"
+          type: string
+          example: "2022-05-24T00:01:00Z"
+        refund:
+          description: "Refund object containing details about the refund. Will always be present even if the order has not been refunded yet. Look at the refundable object to determine the order's refund eligibility. "
+          type: object
+          properties:
+            original_order_id:
+              description: "This field only appears on refunded orders. It is a link back to the corresponding order that is being refunded (the original order)."
+              type: integer
+              example: 100
+            amount:
+              description: "Total amount refunded on the order"
+              type: string
+              example: "-13.00"
+            remaining_amount:
+              type: string
+              description: "The amount remaining on the order that has yet to be refunded."
+              example: "0.00"
+            reason:
+              description: "The reason object will only appear on refund orders. It indicates WHY the refund was created. For orders that have been refunded, the reason object will appear in the orders array."
+              type: object
+              properties:
+                code:
+                  description: "The reason code that was submitted."
+                  type: string
+                  example: "122346"
+                name:
+                  description: "The reason name or explaination"
+                  type: string
+                  example: "Customer not happy"
+            active_user:
+              description: "The active object will only appear on refund orders. It indicates WHO created the refund order. For orders that have been refunded, the active_user object will appear in the orders array."
+              type: object
+              properties:
+                id:
+                  type: string
+                  example: "199"
+                login:
+                  type: string
+                  example: "jhondoe@mail.com"
+            refundable:
+              description: "Refundable Object. Contains information about each refundable element. Today: only order level information. Future: items, fees, tips "
+              type: object
+              properties:
+                order:
+                  description: "Is the order refundable by OAPI"
+                  type: boolean
+                  example: true
+            orders:
+              description: "Order Array: List of corresponding refunded orders and information about each refunded order. An order can have 1 to many corresponding refund orders."
+              type: array
+              items:
+                type: object
+                properties:
+                  order_id:
+                    description: "The corresponding refund order ID."
+                    type: integer
+                    example: 200
+                  device_order_id:
+                    description: "ID generated by client, like by AX or OAPI"
+                    type: string
+                    example: "AX00000111"
+                  create_date:
+                    description: "Pulled from Connect device order time"
+                    type: string
+                    example: "2022-05-24T00:01:00Z"
+                  amount:
+                    description: "Order amount"
+                    type: string
+                    example: "13.00"
+                  reason:
+                    description: "The reason object indicates WHY the refund was created. The reason object appears in the orders array for Orders that have been refunded."
+                    type: object
+                    properties:
+                      code:
+                        description: "The reason code that was submitted."
+                        type: string
+                        example: "122346"
+                      name:
+                        description: "The reason name or explaination"
+                        type: string
+                        example: "Customer not happy"
+                  active_user:
+                    description: "The active object indicates WHO created the refund order. Active user object appears in the orders array for Orders that have been refunded."
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        example: "199"
+                      login:
+                        type: string
+                        example: "jhondoe@mail.com"
+        payments:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                example: "100200"
+              amount:
+                type: string
+                example: "10.00"
+              change:
+                type: string
+                example: "0.00"
+              tip:
+                type: string
+                example: "0.00"
+              index:
+                type: integer
+                example: 1
+              tender_id:
+                description: "Connet paymentType"
+                type: integer
+                example: 1
+              tender_type:
+                description: "Connect Payment name"
+                type: string
+                example: "credit card"
+              tender_name:
+                description: "Connect Payment config.name"
+                type: string
+                example: "Elavon"
+              metadata:
+                type: string
+                example: "{\"AuthCurrency\":\"USD\",\"CaptureMethod\":\"MANUAL\",\"CardType\":\"VISA\",\"DeviceTransactionID\":\"160222ED3-1FD68B66-B65D-45A0-8063-584958463CCE\",\"ReqCurrency\":\"USD\",\"TransactionType\":\"SALE\"}"
+              transaction_id:
+                type: string
+                example: "260521ED3-8F67B6C8-DB4F-41CB-879D-006EAFE4409F"
+    RefundedOrderList:
+      type: object
+      properties:
+        orders:
+          type: array
+          items:
+            type: object
+            properties:
+              order_id:
+                description: "ID generated by Connect"
+                type: integer
+                example: 38002
+              device_order_id:
+                description: "ID generated by client, like by AX or OAPI"
+                type: string
+                example: "AX00000111"
+              status:
+                description: "Connect Status. All Orders related to refund will have the same status of completed. Showing now to prepare for potential future statuses. "
+                type: string
+                enum: [ COMPLETED, REFUND_PROCESSING, PARTIAL_REFUND, REFUNDED, REFUND_PROCESSED, PENDING ]
+                example: "COMPLETED"
+              venue_id:
+                description: "Connect-assigned venue ID"
+                type: integer
+                example: 1371
+              vendor_id:
+                description: "Connect-assigned vendor ID"
+                type: integer
+                example: 865
+              create_date:
+                description: "Pulled from Connect device order time"
+                type: string
+                example: "2022-05-24T00:01:00Z"
+              refund:
+                description: "Refund object containing details about the refund. Will always be present even if the order has not been refunded yet. Look at the refundable object to determine the order's refund eligibility. "
+                type: object
+                properties:
+                  refundable:
+                    description: "Refundable Object. Contains information about each refundable element. Today: only order level information. Future: items, fees, tips "
+                    type: object
+                    properties:
+                      order:
+                        description: "Is the order refundable by OAPI"
+                        type: boolean
+                        example: true
+                  orders:
+                    description: "Order Array: List of corresponding refunded orders and information about each refunded order. An order can have 1 to many corresponding refund orders."
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          description: "The corresponding refund order ID."
+                          type: integer
+  responses:
+    "400_Checkout_Malformed":
+      description: Checkout Malformed
+      content:
+        application/vnd.appetize+json;version=1:
+          schema:
+            $ref: '#/components/schemas/RequestMalformed'
+    "400_Calculate_Malformed":
+      description: Calculate Malformed
+      content:
+        application/vnd.appetize+json;version=1:
+          schema:
+            $ref: '#/components/schemas/RequestMalformed'
+    "400_Levels_Malformed":
+      description: Levels Malformed
+      content:
+        application/vnd.appetize+json;version=1:
+          schema:
+            $ref: '#/components/schemas/LevelsMalformed'
+    "204":
+      description: Success with no content.
+    "400":
+      description: Bad Request.
+      content:
+        application/vnd.appetize+json;version=1:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: 'malformed request syntax'
+    "401":
+      description: Unauthorized
+      content:
+        application/vnd.appetize+json;version=1:
+          schema:
+            $ref: '#/components/schemas/AuthenticationBearerFailure'
+        application/json:
+          examples:
+            response:
+              value:
+                message: unauthorized
+    "401_Invalid_XAPIKey":
+      description: Unauthorized
+      content:
+        application/vnd.appetize+json;version=1:
+          schema:
+            $ref: '#/components/schemas/AuthenticationXAPIFailure'
+        application/json:
+          examples:
+            response:
+              value:
+                message: unauthorized
+    "404_Store_Not_Found":
+      description: Not Found
+      content:
+        application/vnd.appetize+json;version=1:
+          schema:
+            $ref: '#/components/schemas/StoreNotFound'
+    "404_Menu_Not_Found":
+      description: Not Found
+      content:
+        application/vnd.appetize+json;version=1:
+          schema:
+            $ref: '#/components/schemas/MenuNotFound'
+    "404_Level_Not_Found":
+      description: Not Found
+      content:
+        application/vnd.appetize+json;version=1:
+          schema:
+            $ref: '#/components/schemas/LevelNotFound'
+    "422":
+      description: Unprocessable Entity
+      content:
+        application/vnd.appetize+json;version=1:
+          schema:
+            $ref: '#/components/schemas/UnprocessableEntity'
+    "200_apl_session_token":
+      description: The request has succeeded.
+      headers:
+        Content-Type:
+          description: Content type of the response
+          schema:
+            $ref: '#/components/schemas/Content-Type'
+      content:
+        application/com.appetize.oapi.apl.v1+json:
+          schema:
+            $ref: '#/components/schemas/AplSessionTokenResponse'
+    "200_apl_payment":
+      description: The request has succeeded.
+      headers:
+        Content-Type:
+          description: Content type of the response
+          schema:
+            $ref: '#/components/schemas/Content-Type'
+      content:
+        application/com.appetize.oapi.apl.v1+json:
+          schema:
+            $ref: '#/components/schemas/AplPaymentResponse'
+    "200_apl_query_token":
+      description: The request has succeeded.
+      headers:
+        Content-Type:
+          description: Content type of the response
+          schema:
+            $ref: '#/components/schemas/Content-Type'
+      content:
+        application/com.appetize.oapi.apl.v1+json:
+          schema:
+            $ref: '#/components/schemas/AplQueryTokenResponse'
+    "400_apl":
+      description: The server cannot process the request due to a client error.
+      content:
+        application/com.appetize.oapi.apl.v1+json:
+          schema:
+            required:
+              - message
+            properties:
+              message:
+                type: string
+                example: "Bad request: xxx"
+              code:
+                type: string
+                example: 600
+    "401_apl":
+      description: The requester is unauthorized.
+      content:
+        application/com.appetize.oapi.apl.v1+json:
+          schema:
+            required:
+              - message
+            properties:
+              message:
+                type: string
+                example: "failed parsing Claims: xxx"
+    "500_apl":
+      description: The server cannot process the request due to a internal server error.
+      content:
+        application/com.appetize.oapi.apl.v1+json:
+          schema:
+            required:
+              - message
+            properties:
+              message:
+                type: string
+                example: "Internal Server Error: xxx"
+
+    # Refund responses
+    "create_refund_201":
+      description: The order full refund was created.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RefundedOrder'
+          examples:
+            Refund Order:
+              value:
+                order_id: 200
+                device_order_id: "AX00000111"
+                venue_id: 865
+                vendor_id: 1371
+                status: "COMPLETED"
+                source: "oapi"
+                amount: "-13"
+                create_date: "2022-05-25T00:01:00Z"
+                refund:
+                  original_order_id: 100
+                  refundable:
+                    order: false
+                  reason:
+                    code: "122346"
+                    name: "Customer not happy"
+                  active_user:
+                    id: "199"
+                    login: "jhondoe@mail.com"
+                payments:
+                  - id: "100200"
+                    amount: "-13.00"
+                    change: "0.00"
+                    tip: "0.00"
+                    index: 0
+                    tender_id: 36
+                    tender_type: "Credit Card"
+                    tender_name: "Elavon"
+                    metadata: "{\"AuthCurrency\":\"USD\",\"CaptureMethod\":\"MANUAL\",\"CardType\":\"VISA\",\"DeviceTransactionID\":\"160222ED3-1FD68B66-B65D-45A0-8063-584958463CCE\",\"ReqCurrency\":\"USD\",\"TransactionType\":\"SALE\"}"
+                    transaction_id: "260521ED3-8F67B6C8-DB4F-41CB-879D-006EAFE4409F"
+
+
+    "create_refund_400":
+      description: Bad Request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorWithDetails'
+          examples:
+            "Order is not in the completed status":
+              value:
+                code: 400
+                message: "Order is not in the completed status"
+                details: "Cannot refund the order. The Order has not been paid or is pending or has already by refunded"
+            "Order ID Invalid":
+              value:
+                code: 400
+                message: "Bad formatted order id"
+                details: "strconv.atoi: parsing \"545\": value out of range"
+            "Invalid JSON format":
+              value:
+                code: 400
+                message: "Invalid JSON format"
+                details: "Invalid character 'f' after object key"
+            "Bad request":
+              value:
+                code: 400
+                message: "Bad request"
+                details: "Invalid parameter: order_id"
+            "Unsupported payment type":
+              value:
+                code: 400
+                message: "Bad request"
+                details: "unsupported payment type: 4"
+            "Unsupported refund type":
+              value:
+                code: 400
+                message: "Bad request"
+                details: "Unsupported refund type: FULL"
+            "Order don't contains a UUID":
+              value:
+                code: 400
+                message: "Order don't contains a UUID"
+                details: "empty property"
+            "Order can't be refunded":
+              value:
+                code: 400
+                message: "Order can't be refunded"
+                details: "Cannot refund the order. Order was paid with multiple credit cards or other tender types, we can only refund orders paid in full by a single credit card"
+            "Already refunded, partial refunds unsupported":
+              value:
+                code: 400
+                message: "Already refunded, partial refunds unsupported"
+                details: "Cannot refund the order. Order was paid with multiple credit cards or other tender types, we can only refund orders paid in full by a single credit card"
+            "Order is not paid in full by a single credit card":
+              value:
+                code: 400
+                message: "Order is not paid in full by a single credit card"
+                details: "Cannot refund the order. Order was paid with multiple credit cards or other tender types, we can only refund orders paid in full by a single credit card"
+            "Order can not be refunded due to NonRefundable flag":
+              value:
+                code: 400
+                message: "Order can not be refunded due to NonRefundable flag"
+                details: "Cannot refund the order. Order was paid with multiple credit cards or other tender types, we can only refund orders paid in full by a single credit card"
+            "Only completed order can be refunded":
+              value:
+                code: 400
+                message: "Only completed order can be refunded"
+                details: "Cannot refund the order. Order was paid with multiple credit cards or other tender types, we can only refund orders paid in full by a single credit card"
+    "create_refund_401":
+      description: Invalid credentials
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorWithDetails'
+          examples:
+            "Invalid credentials":
+              value:
+                code: 401
+                message: "Invalid credentials"
+                details: "Venue not found in claims"
+
+    "create_refund_404":
+      description: Not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorWithDetails'
+          examples:
+            "Order not found":
+              value:
+                code: 404
+                message: "Order is not found"
+                details: "order not found. please check your Order ID"
+            "Order details not found":
+              value:
+                code: 404
+                message: "Order details not found"
+                details: "Please check your Order UUID"
+    "create_refund_422":
+      description: Doesn't meet the preconditions
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorWithDetails'
+          examples:
+            "Failed refund precondition":
+              value:
+                code: 422
+                message: "Failed refund precondition"
+                details: "The order already has a previous refund associated"
+    "create_refund_500":
+      description: Internal error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorWithDetails'
+          examples:
+            "Error getting store details":
+              value:
+                code: 500
+                message: "Error getting store details"
+                details: "Can't get store details"
+            "Error parsing terminal id":
+              value:
+                code: 500
+                message: "Error parsing terminal id"
+                details: "strconv.atoi: parsing \"545\": value out of range"
+            "Tenders not found":
+              value:
+                code: 500
+                message: "Tenders not found"
+                details: "[...]"
+            "Credit card payment return error":
+              value:
+                code: 500
+                message: "Credit card payment return error"
+                details: "[...]"
+            "Custom card payment return error":
+              value:
+                code: 500
+                message: "Custom card payment return error"
+                details: "[...]"
+            "Error generating Order receipt":
+              value:
+                code: 500
+                message: "Error generating Order receipt"
+                details: "[...]"
+            "Error saving Order receipt":
+              value:
+                code: 500
+                message: "Error saving Order receipt"
+                details: "[...]"
+            "Order checkout error":
+              value:
+                code: 500
+                message: "Order checkout error"
+                details: "[...]"
+            "Error updating refunded order status":
+              value:
+                code: 500
+                message: "Error updating refunded order status"
+                details: "[...]"
+            "Error building refund order":
+              value:
+                code: 500
+                message: "Error building refund order"
+                details: "[...]"
+    "get_refund_200":
+      description: Returns the order details by order ID.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RefundedOrder'
+          examples:
+            Order that has NOT been refunded:
+              value:
+                order_id: 100
+                device_order_id: "AX00000111"
+                venue_id: 865
+                vendor_id: 1371
+                status: "COMPLETED"
+                source: "ax"
+                amount: "13"
+                create_date: "2022-05-24T00:01:00Z"
+                refund:
+                  refundable:
+                    order: true
+                payments:
+                  - id: "100200"
+                    amount: "13.00"
+                    change: "0.00"
+                    tip: "0.00"
+                    index: 0
+                    tender_id: 36
+                    tender_type: "Credit Card"
+                    tender_name: "Elavon"
+                    metadata: "{\"AuthCurrency\":\"USD\",\"CaptureMethod\":\"MANUAL\",\"CardType\":\"VISA\",\"DeviceTransactionID\":\"160222ED3-1FD68B66-B65D-45A0-8063-584958463CCE\",\"ReqCurrency\":\"USD\",\"TransactionType\":\"SALE\"}"
+                    transaction_id: "260521ED3-8F67B6C8-DB4F-41CB-879D-006EAFE4409F"
+            Order that has been refunded:
+              value:
+                order_id: 100
+                device_order_id: "AX00000111"
+                venue_id: 865
+                vendor_id: 1371
+                status: "COMPLETED"
+                source: "ax"
+                amount: "13"
+                create_date: "2022-05-24T00:01:00Z"
+                refund:
+                  total_amount: "-13"
+                  remaining_amount: "0.00"
+                  refundable:
+                    order: false
+                  orders:
+                    - order_id: 200
+                      device_order_id: "AX00000111"
+                      create_date: "2022-05-25T00:01:00Z"
+                      amount: "-13"
+                      reason:
+                        code: "122346"
+                        name: "Customer not happy"
+                      active_user:
+                        id: "199"
+                        login: "jhondoe@mail.com"
+                payments:
+                  - id: "100200"
+                    amount: "13.00"
+                    change: "0.00"
+                    tip: "0.00"
+                    index: 0
+                    tender_id: 36
+                    tender_type: "Credit Card"
+                    tender_name: "Elavon"
+                    metadata: "{\"AuthCurrency\":\"USD\",\"CaptureMethod\":\"MANUAL\",\"CardType\":\"VISA\",\"DeviceTransactionID\":\"160222ED3-1FD68B66-B65D-45A0-8063-584958463CCE\",\"ReqCurrency\":\"USD\",\"TransactionType\":\"SALE\"}"
+                    transaction_id: "260521ED3-8F67B6C8-DB4F-41CB-879D-006EAFE4409F"
+            Refund Order:
+              value:
+                order_id: 200
+                device_order_id: "AX00000111"
+                venue_id: 865
+                vendor_id: 1371
+                status: "COMPLETED"
+                source: "oapi"
+                amount: "-13"
+                create_date: "2022-05-25T00:01:00Z"
+                refund:
+                  original_order_id: 100
+                  refundable:
+                    order: false
+                  reason:
+                    code: "122346"
+                    name: "Customer not happy"
+                  active_user:
+                    id: "199"
+                    login: "jhondoe@mail.com"
+                payments:
+                  - id: "100200"
+                    amount: "-13.00"
+                    change: "0.00"
+                    tip: "0.00"
+                    index: 0
+                    tender_id: 36
+                    tender_type: "Credit Card"
+                    tender_name: "Elavon"
+                    metadata: "{\"AuthCurrency\":\"USD\",\"CaptureMethod\":\"MANUAL\",\"CardType\":\"VISA\",\"DeviceTransactionID\":\"160222ED3-1FD68B66-B65D-45A0-8063-584958463CCE\",\"ReqCurrency\":\"USD\",\"TransactionType\":\"SALE\"}"
+                    transaction_id: "260521ED3-8F67B6C8-DB4F-41CB-879D-006EAFE4409F"
+    "get_refund_400":
+      description: Bad Request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorWithDetails'
+          examples:
+            "Order ID Invalid":
+              value:
+                code: 400
+                message: "Bad formatted order id"
+                details: "strconv.atoi: parsing \"545\": value out of range"
+            "Bad request":
+              value:
+                code: 400
+                message: "Bad request"
+                details: "Invalid parameter: order_id"
+    "get_refund_401":
+      description: Invalid credentials
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorWithDetails'
+          examples:
+            "Invalid credentials":
+              value:
+                code: 401
+                message: "Invalid credentials"
+                details: "Venue not found in claims"
+    "get_refund_404":
+      description: Not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorWithDetails'
+          examples:
+            "Order not found":
+              value:
+                code: 404
+                message: "Order is not found"
+                details: "order not found. please check your Order ID"
+            "Order details not found":
+              value:
+                code: 404
+                message: "Order details not found"
+                details: "Can't get orders details"
+    "get_refund_500":
+      description: Internal error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorWithDetails'
+          examples:
+            "Internal error":
+              value:
+                code: 500
+                message: "Internal error"
+                details: "Error connecting against Connect"
+    "list_refunds_200":
+      description: Returns the list of the refunds associated to the account ID.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RefundedOrderList'
+          examples:
+            List of orders that have Not been refunded:
+              value:
+                orders:
+                  - order_id: 100
+                    device_order_id: "AX00000111"
+                    status: "COMPLETED"
+                    venue_id: 865
+                    vendor_id: 1371
+                    create_date: "2022-05-24T00:01:00Z"
+                    refund:
+                      refundable:
+                        order: true
+            List of orders that Have been refunded:
+              value:
+                orders:
+                  - order_id: 500
+                    device_order_id: "AX00000111"
+                    status: "COMPLETED"
+                    venue_id: 865
+                    vendor_id: 1371
+                    create_date: "2022-05-24T00:01:00Z"
+                    refund:
+                      refundable:
+                        order: false
+                      orders:
+                        - id: 600
+
+
+    "list_refunds_400":
+      description: Bad Request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorWithDetails'
+          examples:
+            "Bad request":
+              value:
+                code: 400
+                message: "Bad request"
+                details: "Invalid parameter: venue_id"
+            "Timezone invalid":
+              value:
+                code: 400
+                message: "Timezone invalid"
+                details: "Unknown time zone America/KO"
+            "Invalid date format":
+              value:
+                code: 400
+                message: "Invalid date format, expected: YYYY-MM-DD hh:mm:ss"
+                details: "Parsing time \"2022-10-19 10:54:32y\": extra text: \"y\""
+    "list_refunds_401":
+      description: Invalid credentials
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorWithDetails'
+          examples:
+            "Invalid credentials":
+              value:
+                code: 401
+                message: "Invalid credentials"
+                details: "Venue not found in claims"
+    "list_refunds_500":
+      description: Internal error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorWithDetails'
+          examples:
+            "Error getting orders":
+              value:
+                code: 500
+                message: "Error getting orders"
+                details: "Can't get orders"
+            "Error parsing terminal id":
+              value:
+                code: 500
+                message: "Error parsing terminal id"
+                details: "strconv.atoi: parsing \"545\": value out of range"
+            "Error getting store details":
+              value:
+                code: 500
+                message: "Error getting store details"
+                details: "Can't get store details"
+
+  requestBodies:
+    Checkout:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CheckoutRequest'
+
+```
+{% endtab %}
+
+
+{% endtabs %}

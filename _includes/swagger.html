@@ -1,0 +1,27 @@
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.10.0/swagger-ui.css" />
+<link rel="stylesheet" href="{{site.baseurl}}/swagger-ui/theme-outline.css" />
+<link rel="stylesheet" href="{{site.baseurl}}/swagger-ui/custom.css" />
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.10.0/swagger-ui-bundle.js" crossorigin></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.10.0/swagger-ui-standalone-preset.js"
+  crossorigin></script>
+
+<script type="text/javascript">
+  function loadSwaggerUi(url, domId) {
+    window.ui = SwaggerUIBundle({
+      url: url,
+      deepLinking: true,
+      dom_id: '#' + domId,
+      showExtensions: true,
+      presets: [
+        SwaggerUIBundle.presets.apis,
+        SwaggerUIStandalonePreset
+      ],
+      requestInterceptor: (request) => {
+        request.headers["accept"] = "text/yaml";
+        return request;
+      },
+      layout: "StandaloneLayout",
+    });
+  }
+</script>

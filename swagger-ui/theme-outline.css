@@ -1,0 +1,126 @@
+/**
+ * Swagger UI Theme Overrides
+ *
+ * Theme: Outline
+ * Author: Mark Ostrander
+ * Github: https://github.com/ostranme/swagger-ui-themes
+ */
+
+ .swagger-ui .opblock.opblock-post {
+   border-color: #10a54a;
+   background: rgba(241, 241, 241, .1);
+ }
+
+ .swagger-ui .opblock.opblock-post .opblock-summary-method {
+   background: #fafafa;
+   color: #10a54a;
+   border: solid 1px #10a54a;
+ }
+
+ .swagger-ui .opblock.opblock-post .opblock-summary {
+   border-color: #DADFE1;
+ }
+
+ .swagger-ui .opblock.opblock-put {
+   border-color: #c5862b;
+   background: rgba(241, 241, 241, .1);
+ }
+
+ .swagger-ui .opblock.opblock-put .opblock-summary-method {
+   background: #fafafa;
+   color: #c5862b;
+   border: solid 1px #c5862b;
+ }
+
+ .swagger-ui .opblock.opblock-put .opblock-summary {
+   border-color: #DADFE1;
+ }
+
+ .swagger-ui .opblock.opblock-delete {
+   border-color: #a41e22;
+   background: rgba(241, 241, 241, .1);
+ }
+
+ .swagger-ui .opblock.opblock-delete .opblock-summary-method {
+   background: #fafafa;
+   color: #a41e22;
+   border: solid 1px #a41e22;
+ }
+
+ .swagger-ui .opblock.opblock-delete .opblock-summary {
+   border-color: #DADFE1;
+ }
+
+ .swagger-ui .opblock.opblock-get {
+   border-color: #0f6ab4;
+   background: rgba(241, 241, 241, .1);
+ }
+
+ .swagger-ui .opblock.opblock-get .opblock-summary-method {
+   background: #fafafa;
+   color: #0f6ab4;
+   border: solid 1px #0f6ab4;
+ }
+
+ .swagger-ui .opblock.opblock-get .opblock-summary {
+   border-color: #DADFE1;
+ }
+
+ .swagger-ui .opblock.opblock-patch {
+   border-color: #c5862b;
+   background: rgba(241, 241, 241, .1);
+ }
+
+ .swagger-ui .opblock.opblock-patch .opblock-summary-method {
+   background: #fafafa;
+   color: #c5862b;
+   border: solid 1px #c5862b;
+ }
+
+ .swagger-ui .opblock.opblock-patch .opblock-summary {
+   border-color: #DADFE1;
+ }
+
+ .swagger-ui .opblock.opblock-head {
+   border-color: #0f6ab4;
+   background: rgba(241, 241, 241, .1);
+ }
+
+ .swagger-ui .opblock.opblock-head .opblock-summary-method {
+   background: #fafafa;
+   color: #0f6ab4;
+   border: solid 1px #0f6ab4;
+ }
+
+ .swagger-ui .opblock.opblock-head .opblock-summary {
+   border-color: #DADFE1;
+ }
+
+ .swagger-ui .opblock.opblock-options {
+   border-color: #0f6ab4;
+   background: rgba(241, 241, 241, .1);
+ }
+
+ .swagger-ui .opblock.opblock-options .opblock-summary-method {
+   background: #fafafa;
+   color: #0f6ab4;
+   border: solid 1px #0f6ab4;
+ }
+
+ .swagger-ui .opblock.opblock-options .opblock-summary {
+   border-color: #DADFE1;
+ }
+
+ .swagger-ui .info a {
+   font-size: 14px;
+   -webkit-transition: all .4s;
+   transition: all .4s;
+   font-family: Open Sans, sans-serif;
+   color: #0f6ab4;
+ }
+
+ .swagger-ui .info a:hover {
+   color: #0f6ab4;
+ }
+
+ 

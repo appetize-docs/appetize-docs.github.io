@@ -1,0 +1,57 @@
+.swagger-ui .topbar{
+    display: none !important;
+}
+.swagger-ui *{
+    font-family: "Helvetica Neue", system-ui, -apple-system, blinkmacsystemfont, "Segoe UI",
+roboto, "Helvetica Neue", arial, sans-serif, "Segoe UI Emoji" !important;
+}
+.swagger-ui .opblock-tag{
+    border-bottom: none !important;
+}
+
+.swagger-ui .opblock{
+    box-shadow: none !important;
+}
+
+.swagger-ui .try-out__btn{
+    display: none !important;
+}
+
+.swagger-ui .scheme-container{
+    padding: 0 !important;
+    margin: 0 !important;
+    display: none !important;
+}
+.swagger-ui .authorization__btn{
+    display: none !important;
+}
+
+.swagger-ui .info hgroup.main .link,
+.swagger-ui .info hgroup.main .version-stamp{
+    display: none;
+}
+.swagger-ui td,.swagger-ui th{
+    background-color: transparent;
+    border: none;
+}
+.swagger-ui .opblock .opblock-summary-operation-id, .swagger-ui .opblock .opblock-summary-path, .swagger-ui .opblock .opblock-summary-path__deprecated{
+    font-family: "SFMono-Regular", menlo, consolas, monospace !important;
+}
+.swagger-ui .wrapper{
+    padding: 0 !important;
+}
+.swagger-ui .info{
+    margin: 0 !important;
+}
+.swagger-ui .opblock .opblock-summary-path-description-wrapper{
+    display: block !important;
+}
+.swagger-ui .opblock .opblock-summary-path, .swagger-ui .opblock .opblock-summary-path__deprecated{
+    padding: 0 !important;
+}
+.swagger-ui .opblock .opblock-summary-method{
+    min-width: 90px
+}
+.swagger-ui .opblock .opblock-summary .view-line-link.copy-to-clipboard{
+    display: none !important;
+}
