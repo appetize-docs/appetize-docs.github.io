@@ -21,8 +21,8 @@ A step-by-step series of examples that tell you how to get a development environ
 1. **Clone the Repository**
 
  ```bash
-   git clone https://github.com/[owner]/appetize
-   cd appetize
+   git clone https://github.com/appetize-docs/appetize-docs.github.io
+   cd appetize-docs.github.io
  ```
 
 2. **Set Up Ruby Environment**
