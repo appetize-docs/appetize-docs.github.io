@@ -30,6 +30,12 @@ Transactions PubSub facilitates the retrieval of real-time, raw order data by en
 - Required to be enabled for each customer. The data it pushes is limited to the orders that flow in _after_ that date. It does not have access to orders beyond that date.
 - When adding a new Venue or Vendor to a Corporate, a new subscription will be required for their results to return.
 - A single subscription cannot contain a combination of more than 200 Corporates, Venues, or Vendors.
+- Duplicate events may occur due to data retrieval latencies and order processing retries. While retries are not frequent, they can lead to such events. Typically, orders process successfully after the first retry, if needed, with 15-second intervals between retries. A second retry is very rare. Keep an eye on the **"consumer_status"** to track the status of orders.
+  * **"consumer_status"** values:
+    * **completed**: Order fully processed, this status is crucial for integrating the order into processes. *UOP* processing failures are not always indicative of order issues.
+    * **in_progress**: Processing attempted but incomplete. If a retry occurs, it's typically after 15 seconds.
+    * **incomplete**: Processing failed after maximum attempts, leading to quarantine status.
+   
 
 # Getting Started
 
