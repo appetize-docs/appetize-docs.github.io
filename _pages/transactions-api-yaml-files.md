@@ -570,7 +570,7 @@ components:
                 description: "If retrieved order has all available values or it is missing some"
                 example: "completed"
                 type: string
-                enum: [ completed, incomplete ]
+                enum: [ completed, in_progress, incomplete ]
         pagination:
           $ref: "#/components/schemas/pagination"
     list_quarantine_orders_result:
@@ -743,7 +743,7 @@ components:
         retrieval_status:
           description: "If retrieved order has all available values or it is missing some"
           example: "completed"
-          enum: [ completed, incomplete ]
+          enum: [ completed, in_progress, incomplete ]
           type: string
         seat_id:
           description: "Connect-assigned seat ID"
@@ -889,7 +889,7 @@ components:
       example: "completed"
       type: string
       default: "completed"
-      enum: [ completed, incomplete ]
+      enum: [ completed, in_progress, incomplete ]
     status:
       example: "DEADLETTER"
       type: string
