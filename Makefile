@@ -1,9 +1,9 @@
 RUBY_VERSION := $(shell cat .ruby-version)
 
-serve: use-ruby install-bundle
+serve: 
 	bundle exec jekyll serve -P 3001 -l
 
-build: use-ruby install-bundle
+build: install-bundle
 	bundle exec jekyll build --baseurl "/"
 
 use-ruby: 
