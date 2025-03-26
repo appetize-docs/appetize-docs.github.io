@@ -10,7 +10,6 @@ layout: default
 > Released on: 07/19/2023  
 > Release Notes: [Link](https://support.appetize.com/hc/en-us/articles/360038428754-Mobile-Ordering-API)
 > 
-> Previous Versions [Link]({{site.baseurl}}/page/oapi-yaml-files)
 
 > 📘 Legacy Calculate and Checkout V1
 > 
